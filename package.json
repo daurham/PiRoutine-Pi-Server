@@ -1,0 +1,46 @@
+{
+  "name": "routinepi",
+  "version": "1.0.0",
+  "description": "Using http requests and a rPi, automate your life.",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack -w",
+    "server": "nodemon server/server.js -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daurham/RoutinePi.git"
+  },
+  "keywords": [
+    "pi",
+    "smart",
+    "routine"
+  ],
+  "author": "Jake Daurahm",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/daurham/RoutinePi/issues"
+  },
+  "homepage": "https://github.com/daurham/RoutinePi#readme",
+  "dependencies": {
+    "axios": "^0.26.1",
+    "express": "^4.17.3",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "styled-components": "^5.3.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.17.7",
+    "@babel/plugin-transform-runtime": "^7.17.0",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-react": "^7.16.7",
+    "babel-loader": "^8.2.3",
+    "css-loader": "^6.7.1",
+    "file-loader": "^6.2.0",
+    "nodemon": "^2.0.15",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.70.0",
+    "webpack-cli": "^4.9.2"
+  }
+}
