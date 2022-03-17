@@ -44,7 +44,6 @@ const App = ({ times, getTime }) => {
     //     if (r.time_)
     //   })
     // } else {
-
     // }
     setAlarmTime(() => routines[0].time_)
   };
