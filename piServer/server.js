@@ -5,7 +5,6 @@ const app = express();
 const PORT = 4000;
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json());
-// app.get('/', (req, res) => {console.log('aye'); res.sendStatus(200)});
 
 app.get('/piRoutines', c.getData);
 app.post('/piRun', c.runPump);
