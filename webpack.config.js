@@ -13,6 +13,10 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.ttf$/,
+        use: 'file-loader',
+      },
+      {
         test: /\.(js|jsx)?/,
         exclude: /node_modules/,
         loader: 'babel-loader',
@@ -37,9 +41,19 @@ module.exports = {
           },
         ],
       },
+      {
+        test: /\.(woff|woff2|ttf)$/i,
+        use: {
+          loader: 'url-loader',
+        },
+      },
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/i,
+        type: 'asset/resource',
+      },
     ],
   },
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: ['.js', '.jsx', 'css', 'ttf'],
   },
 };

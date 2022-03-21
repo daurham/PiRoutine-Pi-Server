@@ -14,12 +14,18 @@ const Context = () => {
       .then((res) => { setTime(() => res.data) })
       .catch((err) => console.log('err?: ', err));
   };
-  if (!time) {
-    getAlarmTime();
-  }
+  // uncomment:
+  // if (!time) {
+  //   getAlarmTime();
+  // }
 
   useEffect(() => {
   }, [time])
+
+  // delete testing code:
+  if (!time) {
+    setTime(() => [{'time_': '6:05:00 AM', 'habit': 'sleep'}]);
+  }
 
   return !time ? <Spinner /> : (
     <App times={time} getTime={() => {getAlarmTime()}}/>

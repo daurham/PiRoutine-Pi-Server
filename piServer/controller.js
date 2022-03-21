@@ -4,10 +4,16 @@ const model = require('./model.js');
 let state = false;
 
 const runPump = (req, res) => {
-  (state ? relay.off() : relay.on());
-  state = !state;
-  console.log((state ? 'off' : 'on'));
-  res.sendStatus(201);
+  // (state ? relay.off() : relay.on());
+  // state = !state;
+  // console.log((state ? 'off' : 'on'));
+  relay.on();
+  setTimeout(function () {
+    // (state ? relay.off() : relay.on());
+    // state = !state;
+    relay.off();
+    res.sendStatus(201);
+  }, 5000)
 };
 
 const getData = (req, res) => {

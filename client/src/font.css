@@ -1,0 +1,38 @@
+/* File: font.css */
+/* @font-face {
+  font-family: 'CustomFont1Name';
+  src: local('CustomFont1Name'),
+       url('./fonts/CustomFont1Name.woff') format('woff'),
+       url('./fonts/CustomFont1Name.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'CustomFont2Name';
+  src: local('CustomFont2Name'),
+       url('./fonts/CustomFont2Name.woff') format('woff'),
+       url('./fonts/CustomFont2Name.woff2') format('woff2');
+} */
+/* html, body {
+  background-color: rgb(56, 55, 61);
+}
+:roo {
+  color: white;
+} */
+
+@font-face {
+  font-family: 'Technology';
+  src: url('./fonts/Technology.ttf') format('ttf'),
+}
+@font-face {
+  font-family: 'Technology-Bold';
+  src: url('./fonts/Technology-Bold.ttf') format('ttf'),
+}
+
+.time {
+  color: rgb(255, 0, 0);
+  font-family: 'Technology';
+}
+.timeB {
+  color: red;
+  font-family: 'Technology-Bold';
+}
+
