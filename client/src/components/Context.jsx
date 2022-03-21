@@ -24,11 +24,14 @@ const Context = () => {
 
   // delete testing code:
   if (!time) {
-    setTime(() => [{'time_': '6:05:00 AM', 'habit': 'sleep'}]);
+    setTime(() => [
+      {'time_': '6:05:00 AM', 'habit': 'Wake Up'},
+      {'time_': '6:12:00 AM', 'habit': 'Run'}
+  ]);
   }
 
   return !time ? <Spinner /> : (
-    <App times={time} getTime={() => {getAlarmTime()}}/>
+    <App times={time} getTime={getAlarmTime}/>
   );
 };
 

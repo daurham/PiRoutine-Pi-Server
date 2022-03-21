@@ -6,7 +6,9 @@
   "scripts": {
     "start": "webpack -w",
     "server": "nodemon server/server.js -w",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "pi": "sudo node piServer/server.js",
+    "aws": "bash server/init.sh",
+    "test": "sudo node piServer/testServer.js"
   },
   "repository": {
     "type": "git",
