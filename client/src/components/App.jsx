@@ -8,318 +8,255 @@ import css from './css.css';
 // import WebFont from 'webfontloader';
 import font from '../font.css';
 import Technology from '../fonts/Technology.ttf';
-// const timeCSS = styled`
-//   @font-face {
-//     font-family: 'Technology';
-//     src: url('../fonts/Technology.ttf') format('ttf'),
+import { Temporal, Intl, toTemporalInstant } from '@js-temporal/polyfill';
+// import 'bootstrap';
+import { ProgressBar } from 'react-bootstrap';
+import convert from './convert';
+import { useData } from './Context';
+
+
+
+// const now = Temporal.Now.plainTimeISO(); //
+// console.log(now.toString().slice(0, 8));
+// console.log(alarmTime.hour); // 6
+// console.log(now.hour); // 6
+// const alarmTime = new Temporal.PlainTime(6, 5); // 06:05:00
+// const activeTime = alarmTime.subtract({ hours: 1 }); // 05:05:00
+// const alarmTime2 = alarmTime.add({ minutes: 7 }); // 06:12:00
+// console.log(activateTime.toString()); //
+// console.log(activeTime2.toString());
+// console.log(alarmTime.toString());
+
+// console.log(now.toString().slice(0, 8));
+// let tod = (now.hour > 11 ? 'PM' : 'AM');
+// let time = `${now.hour}:${now.minute}:${now.second} ${tod}`
+// console.log('time:', time); //
+
+
+
+// let currentPhase = 'inactive';
+// const getPhase = () => {
+//   if (currentTime === convert(activeTime)) {
+//     currentPhase = 'active';
 //   }
-// `;
+//   if (currentTime === convert(alarmTime.add({ minutes: 1 }))) {
+//     currentPhase = 'inactive';
+//   }
+//   return;
+// }
+
+// if (currentPhase === 'active') {
+//   if (currentTime === convert(alarmTime) || currentTime === convert(alarmTime2)) {
+//     // trigger the alarm
+//   }
+// }
 
 
-const App = ({ times, getTime }) => {
-  const [currentTime, setCurrentTime] = useState('');
-  // const [alarmTime, setAlarmTime] = useState();
-  // const [alarmTimeTwo, setAlarmTimeTwo] = useState();
-  // const [disfuseTime, setDisfuseTime] = useState();
-  const [status, setStatus] = useState('Pump is Armed.');
+// const convert = (t = null) => { // turns a temporal date obj into a readable time.
+//   t = t || now;
+//   console.log(t);
+//   return `${(t.hour > 12 ? t.hour % 12 : t.hour)}:${(t.minute < 10 ? String('0' + t.minute) : t.minute)}:${(t.second < 10 ? String('0' + t.second) : t.second)} ${(t.hour > 11 ? 'PM' : 'AM')}`
+// };
+
+
+// // identify the current phase:
+// let active = false;
+// // determine if phase is active
+// const isActive = (alarmTime) => {
+//   if ((now.hour >= activeTime.hour && now.hour < alarmTime.hour) || // if within a safe hour block or
+//     (now.hour === alarmTime.hour && now.minute > alarmTime.minute || // if during alarm hour, its within a safe min / sec block
+//       (now.hour === alarmTime.hour && now.minute === alarmTime.minute && now.second > alarmTime.second))) { // if current time is within the active block.
+//     active = true;
+//   } else {
+//     active = false;
+//   }
+// };
+
+
+
+
+
+
+// const convert = (t = null) => { // turns a temporal date obj into a readable time.
+//   t = t || now;
+//   return `${(t.hour > 12 ? t.hour % 12 : t.hour)}:${(t.minute < 10 ? String('0' + t.minute) : t.minute)}:${(t.second < 10 ? String('0' + t.second) : t.second)} ${(t.hour > 11 ? 'PM' : 'AM')}`
+// };
+
+
+
+const App = () => {
+  // const { latitude, longitude, time } = useData(); // works
+  // console.log(latitude, time);
+
+  const now = Temporal.Now.plainTimeISO(); // move to context
+  // let alarmTime = new Temporal.PlainTime(6, 5); // 06:05:00
+  const [alarmTime, setAlarmTime] = useState(new Temporal.PlainTime(6, 5)); // move to context
+  const [initialAlarmTime, setInitialAlarmTime] = useState(alarmTime); // move to context
+  // if (!alarmTime) {
+  // return;
+  // }
+  // console.log(alarmTime);
+  let activeTime = alarmTime.subtract({ hours: 1 }); // 05:05:00
+  // const alarmTime2 = alarmTime.add({ minutes: 7 }); // 06:12:00
+
+  const [status, setStatus] = useState('Stick to your goals');
+  const [currentTime, setCurrentTime] = useState(''); // move to context
   const [isDisarmed, toggleDisarmed] = useState(false);
   const [alarmMessage, setAlarmMessage] = useState('');
-  const [routines, setRoutines] = useState();
-  const [input, setInput] = useState();
-  const [inputTime, setInputTime] = useState('');
-  const [once, ignore] = useState(false);
-  const [canRun, setRunable] = useState(false);
-  const [homeLon, getFreshHomeLon] = useState(112.1105918);
-  const [userLon, getUserLon] = useState();
-  const [msg, setMsg] = useState();
-  const [currAlarmTime, setCurrAlarmTime] = useState();
-  const [canDifuseTime1, setCanDifuseTime1] = useState();
-  const [canDifuseTime2, setCanDifuseTime2] = useState();
-  // const [alarms, setAlarms] = useState();
-  // const [lon, getUserLon] = useState();
+  const [currAlarmTime, setCurrAlarmTime] = useState(convert(alarmTime));
+  const [currentAlarm, setCurrentAlarm] = useState(1);
+  const [active, setActive] = useState(true);
+  const [distance, setDistance] = useState(0); // move to context
+
   let clock;
   let interval;
-  let isArmed = (isDisarmed ? 'Disfused...' : 'DISARM');
-  let goal;
-  let userLoc;
-  // set it up to get it dynamically
-  let alarm1Hour = 6;
-  let alarm2Hour = 6;
-  let alarm1Min = 6;
-  let alarm2Min = 6;
-  let alarm1Sec = 6;
-  let alarm2Sec = 6;
-  let alarm1TOD = 'AM';
-  let alarm2TOD = 'AM';
+  let isArmed = (isDisarmed ? 'LOCKED' : 'DISARM');
 
-  let alarmTime1 = `${alarm1Hour}:05:00 AM`;
-  let alarmTime2 = `${alarm2Hour}:12:00 AM`;
-  let difuseTime1 = `${alarm1Hour}:05:00 PM`;
-  let difuseTime2 = `${alarm2Hour}:06:00 AM`;
-  let resetTime1 = `${alarm1Hour}:30:00 PM`;
-  let resetTime2 = `${alarm2Hour}:15:00 AM`;
 
-  const tConvert = (time) => {
-    time = time.toString().match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
-    if (time.length > 1) {
-      time = time.slice(1);
-      time[5] = +time[0] < 12 ? ' AM' : ' PM';
-      time[0] = +time[0] % 12 || 12;
-    }
-    return time.join('');
-  };
+  const switchAlarms = () => { // runs after button is pressed.
+    setCurrentAlarm(() => (currentAlarm === 1 ? 2 : 1));
+  }
 
-  // const setupAlarmTime = () => {
-  //   // setAlarmTime(() => routines[0].time_)
-  //   // setAlarmTimeTwo(() => routines[1].time_)
-  //   alarmTime1 = routines[0].time_;
-  //   alarmTime2 = routines[1].time_;
-  //   let d = alarmTime1.split('').splice(-5, 1, '3');
-  //   console.log(3);
-  //   difuseTime2 = d;
-  //   setCurrAlarmTime(() => alarmTime1);
-  // };
-  // const getDifuseTime = (time) => {
-  //   // 12hr difuse time
-  //   // let d = alarmTime.slice(-2);
-  //   // let t = alarmTime.slice(0, -2);
-  //   // return t + (d === 'AM' ? 'PM' : 'AM');
 
-  //   let d = time.slice(-2);
-  //   console.log(d);
-  //   let t = time.slice(0, -2);
-  //   return t + (d === 'AM' ? 'PM' : 'AM');
-  // }
-
-  // if (alarmTime1 && !disfuseTime) {
-  //   let d = getDifuseTime();
-  //   console.log('difuse time:', d);
-  //   setDisfuseTime(() => d);
-  // }
-
-  // take mysql data and allows it to be processed.
-  // if (times && !routines) {
-  //   if (!once) {
-  //     setRoutines(() => times)
-  //     ignore(() => true);
-  //   }
-  // }
-
-  // if (routines && !alarmTime1) {
-  //   setupAlarmTime();
-  // }
 
   const handleCurrentTime = () => {
-    setCurrentTime(() => new Date().toLocaleTimeString('en-US', { hour12: true }));
+    setCurrentTime(() => convert(Temporal.Now.plainTimeISO()));
   };
 
 
-
-
-  const success = (position) => {
-    const latitude = position.coords.latitude;
-    const longitude = position.coords.longitude;
-    const coords = latitude + longitude;
-    userLoc = Math.abs(longitude);
-    getUserLon(() => longitude);
+  // identify the current phase:
+  // determine if phase is active
+  const isActive = (aTime) => {
+    if (((now.hour >= aTime.hour - 2) && now.hour < aTime.hour) || // if within a safe hour block or
+      (now.hour === aTime.hour && now.minute < aTime.minute) || // if during alarm hour, its within a safe min / sec block
+      (now.hour === aTime.hour && now.minute === aTime.minute && now.second < aTime.second)) { // if current time is within the active block.
+      // console.log('should open');
+      if (!active) {
+        setActive(() => true);
+      }
+    } else {
+      // console.log('should close');
+      if (active) {
+        setActive(() => false);
+      }
+    }
   };
-  const failure = () => {
-    console.log('failed to get coords');
+
+  // run after progressBar is filled.
+  const handleProgressBar = () => { // enables button to be clicked again and diffuses alarm
   }
-  const getLocation = () => {
-    navigator.geolocation.getCurrentPosition(success, failure);
-  };
-  // const handleInputTime = (e) => {
-  //   e.preventDefault();
-  //   const inputAlarmTimeModified = e.target.value + ':00';
-  //   let inpTime = tConvert(inputAlarmTimeModified);
-  //   setInputTime(() => inpTime);
-  // }
 
-  // const handleRoutine = (e) => {
-  //   setInput(() => e.target.value);
-  // }
-  // const handleRoutineSubmit = (e) => {
-  //   e.preventDefault();
-  //   const data = { time: inputTime, routine: input || 'N/A' };
-  //   axios.post('/setup', data)
-  //     .then(() => getTime());
-  // };
+  const statusGenerator = () => { // randomly returns a positive phrase
+    let phrases = ['Make them proud', 'Keep it up', 'Keep proving you\'ve had enough', 'Keep crushing it!', 'Captain the fuck out this day!', 'Stick to your goals', 'Trust your wiser self', 'Keep going cap'];
+    let r = Math.floor(Math.random() * (phrases.length));
+    console.log(phrases[r]);
+    return phrases[r];
+  };
 
 
   const handleDisarm = () => {
-    getLocation();
-    setTimeout(function () {
-      console.log(userLoc);
-      console.log(homeLon);
-      let me = String(userLoc).slice(4, 8);
-      let home = String(homeLon).slice(4, 8);
-      console.log(me);
-      console.log(home);
-
-      if (canDifuseTime1 && !isDisarmed) {
-        updateDisarm();
-      }
-      if (canDifuseTime2 && !isDisarmed && Number(me) > (Number(home) + 1)) {
-        updateDisarm();
-      }
-      // // if (currentTime === alarmTime2) {
-      // if (!isDisarmed && Number(me) > (Number(home) + 1)) {
-      //   updateDisarm();
-      //   // }
-      // } else if (!isDisarmed) {
-      //   updateDisarm();
-      // } else {
-      //   setMsg(() => 'Not Yet..')
-      // }
-    }, 1000);
-
-  }
-
-  const updateDisarm = () => {
-    toggleDisarmed(() => !isDisarmed);
-    setStatus(() => 'Keep going.');
-    if (currAlarmTime === alarmTime1) {
-      setCurrAlarmTime(() => alarmTime2);
+    if (isDisarmed) {
+      return;
     } else {
-      setCurrAlarmTime(() => alarmTime1);
+      if (currentAlarm === 1) { // first alarm defused
+        setStatus(() => 'Nice, Now lets get moving!');
+        setAlarmTime(() => alarmTime.add({ minutes: 7 }));
+        switchAlarms();
+        toggleDisarmed(() => true);
+      } else if (currentAlarm === 2) { // second alarm defused
+        setStatus(() => statusGenerator())
+        setAlarmTime(() => initialAlarmTime);
+        setDistance(() => 0);
+        switchAlarms();
+      }
     }
-  }
-    // let val = (isDisarmed ? 0 : 1);
-    // axios.put(`/disarm/`)
-    // let val = (isDisarmed ? 0 : 1);
-    // axios.put(`/disarm/${val}/${routines[0].habit}`)
-    //   .then(() => toggleDisarmed(() => !isDisarmed))
-    //   .then(() => setStatus(() => 'Keep going.'))
-    // .then(() => setRoutines((routines) => routines.slice(1, routines.length)));
+  };
 
-  // const enableDisarm = () => {
-  //   let colInd = alarmTime.indexOf(':');
-  //   let hour = (Number(alarmTime.slice(0, colInd)) - 2);
-  //   return hour + ':' + alarmTime.slice(colInd + 1, alarmTime.length);
-  // }
-  if (!currAlarmTime) {
-    setCurrAlarmTime(() => alarmTime1);
-  }
+  const demo = () => { setAlarmTime(() => now.add({ minutes: 1 })) }
 
 
 
   const checkAlarmClock = () => {
-    // if the timer is within 2 hours of the alarm going off, enable the disarm button.
-
-    if (currentTime === difuseTime1) {
-      setCanDifuseTime1(() => true);
+    if (currentAlarm === 2) {
+      if (distance < 100) {
+        setDistance(() => distance + 5); // remove after testing
+        //
+      }
+      if (distance === 100) {
+        toggleDisarmed(() => false);
+      }
     }
-    if (currentTime === difuseTime2) {
-      setCanDifuseTime2(() => true);
-    }
-    if (currentTime === resetTime1) {
-      setCanDifuseTime1(() => false);
-    }
-    if (currentTime === resetTime2) {
-      setCanDifuseTime2(() => false);
-    }
-    // updateDisarm();
-
-    // if (currentTime === disfuseTime) {
-      // setRunable(() => true);
-      // axios.post('/pi/run');
-      // console.log('turning off');
-      // }
-      // if (alarmTime == 'undefined' || !alarmTime) {
-      //   setAlarmMessage(() => "Please set your alarm.");
-    // }
-    if (currentTime.slice(-5, -4) === '5') {
-      setMsg(() => 'You can do it!')
-    }
-    // } else {
-    setAlarmMessage(() => "Your alarm is set for " + currAlarmTime + ".");
-    if (currentTime === alarmTime1 && !isDisarmed) {
+    isActive(alarmTime);
+    setAlarmMessage(() => "Your alarm is set for " + convert(alarmTime) + ".");
+    if (currentTime === convert(alarmTime)) {
       setStatus(() => 'Do Better...');
-      axios.post('/pi/run');
-    }
-    if (currentTime === alarmTime2 && !isDisarmed) {
-      setStatus(() => 'Do Better...');
-      axios.post('/pi/run');
+      // axios.post('/pi/run'); // uncomment when ready for testing
+      console.log('get wet bish!');
     }
   }
 
-// const failsafe = () => {
-//   axios.post('/pi/run');
-// }
-
-// const demo = () => {
-//   setAlarmTime(() => currentTime)
-//   getDifuseTime();
-//   axios.post('/pi/run');
-// }
-
-// console.log('a:', alarmTime, 'd:', disfuseTime);
-useEffect(() => {
-  clock = setInterval(() => handleCurrentTime(), 1000);
-  interval = setInterval(() => checkAlarmClock(), 1000);
-  return () => {
-    clearInterval(clock);
-    clearInterval(interval);
-  }
-}, [currentTime]);
-// useEffect(() => {
-//   clock = setInterval(() => handleCurrentTime(), 1000);
-//   interval = setInterval(() => checkAlarmClock(), 1000);
-//   return () => {
-//     clearInterval(clock);
-//     clearInterval(interval);
-//   }
-// }, [currentTime, currAlarmTime, routines]);
+  useEffect(() => {
+    clock = setInterval(() => handleCurrentTime(), 1000);
+    interval = setInterval(() => checkAlarmClock(), 1000);
+    return () => {
+      clearInterval(clock);
+      clearInterval(interval);
+    }
+  }, [currentTime]);
 
 
+  return (!currentTime || !alarmMessage) ? <Spinner /> : (
 
-return (!currentTime || !alarmMessage) ? <Spinner /> : (
-  // return (!routines || !currentTime || !alarmMessage) ? <Spinner /> : (
+    <AppnContainer className="Technology">
 
-  <AppnContainer className="Technology">
+      <Container>
+        <Header style={{ fontFamily: 'Righteous' }}>{status}</Header>
+      </Container>
+      <Container>
+        <Header style={{ fontFamily: Technology, color: 'red' }}>
+          {currentTime}
+        </Header>
+        {/* <timeCSS>{currentTime}</timeCSS> */}
+      </Container>
+      <Container>
+        <Subheader style={{ fontFamily: 'Righteous' }}>{alarmMessage}</Subheader>
+        {/* <Subheader style={{ fontFamily: 'Righteous' }}>{goal ? goal : null}</Subheader> */}
+      </Container>
+      {active ?
+        <ButtonContainer>
+          <DisarmButton onClick={handleDisarm}><HeaderB>{isArmed}</HeaderB></DisarmButton>
+        </ButtonContainer>
+        : null}
+      {active ?
+        (currentAlarm === 2 ?
+        <ProgressBar now={distance} label={`${distance}%`} />
+          : null)
+          : null}
+      {/* <Container> */}
+      {/* <form> */}
+      {/* <input onChange={handleInputTime} type="time"></input> */}
+      {/* <InputBar onChange={handleRoutine} type="text"></InputBar> */}
+      {/* <input onClick={handleRoutineSubmit} type="submit"></input> */}
+      {/* </form> */}
+      {/* </Container> */}
+      <Container>
+        <ListContainer>
+          <Subheader>
+            {status}
+          </Subheader>
+          {/* <List> */}
+          {/* {routines.length < 2 ? null : <h3 style={{ fontFamily: 'Righteous' }}>Upcoming Routines</h3>} */}
+          {/* {routines.length < 2 ? null : (routines.map((t, index) => ( */}
+          {/* // <Habit key={index} habit={t} currentTime={currentTime} /> */}
+          {/* // )))} */}
+          {/* </List> */}
+        </ListContainer>
+      </Container>
+      {/* <button onClick={failsafe}>failsafe</button> */}
+      <button onClick={demo}>demo 10sec</button>
+    </AppnContainer>
 
-    <Container>
-      <Header style={{ fontFamily: 'Righteous' }}>{status}</Header>
-    </Container>
-    <Container>
-      <Header style={{ fontFamily: 'Righteous', color: 'red' }}>
-        {currentTime}
-      </Header>
-      {/* <timeCSS>{currentTime}</timeCSS> */}
-    </Container>
-    <Container>
-      <Subheader style={{ fontFamily: 'Righteous' }}>{alarmMessage}</Subheader>
-      {/* <Subheader style={{ fontFamily: 'Righteous' }}>{goal ? goal : null}</Subheader> */}
-    </Container>
-    <ButtonContainer>
-      <DisarmButton onClick={handleDisarm}><HeaderB>{isArmed}</HeaderB></DisarmButton>
-    </ButtonContainer>
-    {/* <Container> */}
-    {/* <form> */}
-    {/* <input onChange={handleInputTime} type="time"></input> */}
-    {/* <InputBar onChange={handleRoutine} type="text"></InputBar> */}
-    {/* <input onClick={handleRoutineSubmit} type="submit"></input> */}
-    {/* </form> */}
-    {/* </Container> */}
-    <Container>
-      <ListContainer>
-        <Subheader>
-          {msg}
-        </Subheader>
-        {/* <List> */}
-        {/* {routines.length < 2 ? null : <h3 style={{ fontFamily: 'Righteous' }}>Upcoming Routines</h3>} */}
-        {/* {routines.length < 2 ? null : (routines.map((t, index) => ( */}
-        {/* // <Habit key={index} habit={t} currentTime={currentTime} /> */}
-        {/* // )))} */}
-        {/* </List> */}
-      </ListContainer>
-    </Container>
-    {/* <button onClick={failsafe}>failsafe</button> */}
-    {/* <button onClick={demo}>demo 10sec</button> */}
-  </AppnContainer>
-
-)
+  )
 }
 
 
