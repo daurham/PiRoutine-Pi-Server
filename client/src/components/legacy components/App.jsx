@@ -2,37 +2,111 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 import axios from 'axios';
+import Habit from './Habit';
 import Spinner from './Spinner';
-import css from '../styles/css.css';
-// import font from '../styles/font.css';
+import css from './css.css';
+// import WebFont from 'webfontloader';
+import font from '../font.css';
 import Technology from '../fonts/Technology.ttf';
 import { Temporal, Intl, toTemporalInstant } from '@js-temporal/polyfill';
-import { Form, ProgressBar, Button } from 'react-bootstrap';
+// import 'bootstrap';
+import { ProgressBar } from 'react-bootstrap';
+import convert from './convert';
 import { useData } from './Context';
-import range from './Utils/range';
-import useGeolocation from "./Utils/useGeolocation";
-import convert from './Utils/convert';
+
+
+
+// const now = Temporal.Now.plainTimeISO(); //
+// console.log(now.toString().slice(0, 8));
+// console.log(alarmTime.hour); // 6
+// console.log(now.hour); // 6
+// const alarmTime = new Temporal.PlainTime(6, 5); // 06:05:00
+// const activeTime = alarmTime.subtract({ hours: 1 }); // 05:05:00
+// const alarmTime2 = alarmTime.add({ minutes: 7 }); // 06:12:00
+// console.log(activateTime.toString()); //
+// console.log(activeTime2.toString());
+// console.log(alarmTime.toString());
+
+// console.log(now.toString().slice(0, 8));
+// let tod = (now.hour > 11 ? 'PM' : 'AM');
+// let time = `${now.hour}:${now.minute}:${now.second} ${tod}`
+// console.log('time:', time); //
+
+
+
+// let currentPhase = 'inactive';
+// const getPhase = () => {
+//   if (currentTime === convert(activeTime)) {
+//     currentPhase = 'active';
+//   }
+//   if (currentTime === convert(alarmTime.add({ minutes: 1 }))) {
+//     currentPhase = 'inactive';
+//   }
+//   return;
+// }
+
+// if (currentPhase === 'active') {
+//   if (currentTime === convert(alarmTime) || currentTime === convert(alarmTime2)) {
+//     // trigger the alarm
+//   }
+// }
+
+
+// const convert = (t = null) => { // turns a temporal date obj into a readable time.
+//   t = t || now;
+//   console.log(t);
+//   return `${(t.hour > 12 ? t.hour % 12 : t.hour)}:${(t.minute < 10 ? String('0' + t.minute) : t.minute)}:${(t.second < 10 ? String('0' + t.second) : t.second)} ${(t.hour > 11 ? 'PM' : 'AM')}`
+// };
+
+
+// // identify the current phase:
+// let active = false;
+// // determine if phase is active
+// const isActive = (alarmTime) => {
+//   if ((now.hour >= activeTime.hour && now.hour < alarmTime.hour) || // if within a safe hour block or
+//     (now.hour === alarmTime.hour && now.minute > alarmTime.minute || // if during alarm hour, its within a safe min / sec block
+//       (now.hour === alarmTime.hour && now.minute === alarmTime.minute && now.second > alarmTime.second))) { // if current time is within the active block.
+//     active = true;
+//   } else {
+//     active = false;
+//   }
+// };
+
+
+
+
+
+
+// const convert = (t = null) => { // turns a temporal date obj into a readable time.
+//   t = t || now;
+//   return `${(t.hour > 12 ? t.hour % 12 : t.hour)}:${(t.minute < 10 ? String('0' + t.minute) : t.minute)}:${(t.second < 10 ? String('0' + t.second) : t.second)} ${(t.hour > 11 ? 'PM' : 'AM')}`
+// };
 
 
 
 const App = () => {
-  const { latitude, longitude, currentTime, setCurrentTime, alarmTime, setAlarmTime, distance, setDistance, initialAlarmTime, setInitialAlarmTime, streak } = useData(); // works
+  // const { latitude, longitude, time } = useData(); // works
   // console.log(latitude, time);
 
   const now = Temporal.Now.plainTimeISO(); // move to context
+  // let alarmTime = new Temporal.PlainTime(6, 5); // 06:05:00
+  const [alarmTime, setAlarmTime] = useState(new Temporal.PlainTime(6, 5)); // move to context
+  const [initialAlarmTime, setInitialAlarmTime] = useState(alarmTime); // move to context
+  // if (!alarmTime) {
+  // return;
+  // }
+  // console.log(alarmTime);
+  let activeTime = alarmTime.subtract({ hours: 1 }); // 05:05:00
+  // const alarmTime2 = alarmTime.add({ minutes: 7 }); // 06:12:00
 
   const [status, setStatus] = useState('Stick to your goals');
+  const [currentTime, setCurrentTime] = useState(''); // move to context
   const [isDisarmed, toggleDisarmed] = useState(false);
   const [alarmMessage, setAlarmMessage] = useState('');
   const [currAlarmTime, setCurrAlarmTime] = useState(convert(alarmTime));
   const [currentAlarm, setCurrentAlarm] = useState(1);
   const [active, setActive] = useState(true);
-  const [dropdown, setDropdown] = useState(false);
-  const [inputHr, setInputHr] = useState();
-  const [inputMin, setInputMin] = useState();
-  const [inputTod, setInputTod] = useState('AM');
-  const hours = ['00', ...range(1, 12)];
-  const minutes = ['00', ...range(1, 59)];
+  const [distance, setDistance] = useState(0); // move to context
 
   let clock;
   let interval;
@@ -68,10 +142,14 @@ const App = () => {
     }
   };
 
+  // run after progressBar is filled.
+  const handleProgressBar = () => { // enables button to be clicked again and diffuses alarm
+  }
+
   const statusGenerator = () => { // randomly returns a positive phrase
     let phrases = ['Make them proud', 'Keep it up', 'Keep proving you\'ve had enough', 'Keep crushing it!', 'Captain the fuck out this day!', 'Stick to your goals', 'Trust your wiser self', 'Keep going cap'];
     let r = Math.floor(Math.random() * (phrases.length));
-    // console.log(phrases[r]);
+    console.log(phrases[r]);
     return phrases[r];
   };
 
@@ -90,60 +168,29 @@ const App = () => {
         setAlarmTime(() => initialAlarmTime);
         setDistance(() => 0);
         switchAlarms();
-        axios.put(`/streak/${streak}/${streak + 1}`); // update the streak val.
       }
     }
   };
 
-  const demo = () => { setAlarmTime(() => now.add({ seconds: 10 })) }
+  const demo = () => { setAlarmTime(() => now.add({ minutes: 1 })) }
 
-  const handleFormDropdown = () => {
-    setDropdown(() => (dropdown === true ? false : true));
-  };
-  const handleHr = (e) => {
-    setInputHr(() => Number(e.target.value));
-  };
-  const handleMin = (e) => {
-    setInputMin(() => Number(e.target.value));
-  };
-  const handleTod = (e) => {
-    setInputTod(() => e.target.value);
-  };
 
-  const handleUpdateAlarm = (e) => {
-    let data;
-    if (typeof inputHr === 'number' && typeof inputMin === 'number') {
-      data = { newAlarm: { h: inputHr, m: inputMin }, oldAlarm: { h: alarmTime.hour, m: alarmTime.minute } };
-      if (inputTod === 'PM') {
-        data.newAlarm.h + 12;
-      }
-      axios.put('/updateAlarm', data);
-    } else {
-      alert('Select numbers to update the time.')
-      console.log('Niceee bish!');
-    }
-  };
 
-  // run after progressBar is filled.
-  const handleProgressBar = () => { // enables button to be clicked again and diffuses alarm
+  const checkAlarmClock = () => {
     if (currentAlarm === 2) {
       if (distance < 100) {
         setDistance(() => distance + 5); // remove after testing
+        //
       }
       if (distance === 100) {
         toggleDisarmed(() => false);
       }
     }
-  };
-
-  const checkAlarmClock = () => {
-    handleProgressBar();
     isActive(alarmTime);
     setAlarmMessage(() => "Your alarm is set for " + convert(alarmTime) + ".");
     if (currentTime === convert(alarmTime)) {
       setStatus(() => 'Do Better...');
-      axios.post('/pi/run');
-      axios.put(`/streak/${streak}/${0}`);
+      // axios.post('/pi/run'); // uncomment when ready for testing
       console.log('get wet bish!');
     }
   }
@@ -157,15 +204,13 @@ const App = () => {
     }
   }, [currentTime]);
 
-  useEffect(() => {}, [streak])
-  console.log('distance?: ', distance);
 
   return (!currentTime || !alarmMessage) ? <Spinner /> : (
 
     <AppnContainer className="Technology">
 
       <Container>
-        <Header style={{ fontFamily: 'Righteous' }}>PiRoutine</Header>
+        <Header style={{ fontFamily: 'Righteous' }}>{status}</Header>
       </Container>
       <Container>
         <Header style={{ fontFamily: Technology, color: 'red' }}>
@@ -174,52 +219,31 @@ const App = () => {
         {/* <timeCSS>{currentTime}</timeCSS> */}
       </Container>
       <Container>
-        <Subsubheader style={{ fontFamily: 'Righteous' }}>{alarmMessage}</Subsubheader>
+        <Subheader style={{ fontFamily: 'Righteous' }}>{alarmMessage}</Subheader>
         {/* <Subheader style={{ fontFamily: 'Righteous' }}>{goal ? goal : null}</Subheader> */}
       </Container>
       {active ?
         <ButtonContainer>
-          <Button size='lg' variant='dark' onClick={handleDisarm}>{isArmed}</Button>
-          {/* <DisarmButton onClick={handleDisarm}>{isArmed}</DisarmButton> */}
-          {/* <DisarmButton onClick={handleDisarm}><HeaderB>{isArmed}</HeaderB></DisarmButton> */}
+          <DisarmButton onClick={handleDisarm}><HeaderB>{isArmed}</HeaderB></DisarmButton>
         </ButtonContainer>
         : null}
       {active ?
         (currentAlarm === 2 ?
-          <ProgressBar now={distance} label={`${distance}%`} />
+        <ProgressBar now={distance} label={`${distance}%`} />
           : null)
-        : null}
+          : null}
+      {/* <Container> */}
+      {/* <form> */}
+      {/* <input onChange={handleInputTime} type="time"></input> */}
+      {/* <InputBar onChange={handleRoutine} type="text"></InputBar> */}
+      {/* <input onClick={handleRoutineSubmit} type="submit"></input> */}
+      {/* </form> */}
+      {/* </Container> */}
       <Container>
         <ListContainer>
-          <Subsubheader>
+          <Subheader>
             {status}
-          </Subsubheader>
-          <Subsubheader>
-            Streak: {streak}
-          </Subsubheader>
-          <Container>
-            {dropdown ?
-              <>
-                <Form.Select value={inputHr} onChange={handleHr} aria-label="Select alarm hour">
-                  {hours.map((hr, index) =>
-                    <option key={index} value={hr}>{hr}</option>
-                  )}
-                </Form.Select>
-                <Subheader>:</Subheader>
-                <Form.Select value={inputMin} onChange={handleMin} aria-label="Select alarm minute">
-                  {minutes.map((min, index) =>
-                    <option key={index} value={min}>{min}</option>
-                  )}
-                </Form.Select>
-                <Form.Select value={inputTod} onChange={handleTod} aria-label="Select alarms time of day">
-                  {['AM', 'PM'].map((tod, index) =>
-                    <option key={index} value={tod}>{tod}</option>
-                  )}
-                </Form.Select>
-                <Button onClick={handleUpdateAlarm}>Submit</Button>
-              </>
-              : null}
-          </Container>
+          </Subheader>
           {/* <List> */}
           {/* {routines.length < 2 ? null : <h3 style={{ fontFamily: 'Righteous' }}>Upcoming Routines</h3>} */}
           {/* {routines.length < 2 ? null : (routines.map((t, index) => ( */}
@@ -229,12 +253,7 @@ const App = () => {
         </ListContainer>
       </Container>
       {/* <button onClick={failsafe}>failsafe</button> */}
-      <Button variant='dark' onClick={demo}>testing</Button>
-      {dropdown ?
-        <Button variant='secondary-outline' onClick={handleFormDropdown}>Close</Button>
-        :
-        <Button variant='dark' onClick={handleFormDropdown}>Edit</Button>
-      }
+      <button onClick={demo}>demo 10sec</button>
     </AppnContainer>
 
   )
@@ -249,15 +268,12 @@ const Location = styled.h1`
 const Header = styled.h1`
 font-size: 5rem;
 `;
-// const HeaderB = styled.h1`
-// font-size: 5rem;
-// color: white;
-// `;
+const HeaderB = styled.h1`
+font-size: 5rem;
+color: white;
+`;
 const Subheader = styled.h2`
 font-size: 3rem;
-`;
-const Subsubheader = styled.h3`
-font-size: 2rem;
 `;
 const InputBar = styled.input`
 size: 400%;

@@ -5,11 +5,10 @@ const app = express();
 const PORT = 4000;
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json());
-// app.get('/', (req, res) => {console.log('aye'); res.sendStatus(200)});
 
-app.get('/piRoutines', c.getData);
-app.post('/piRun', c.runPump);
-app.post('/piRoutines/:time/:habit', c.postData);
-app.put('/piRoutines/:isArmed/:habit', c.toggleDisarm);
+app.get('/piRoutines/:table', c.getData);
+app.put('/piRoutines/updateAlarm/:oldAlarm/:newAlarm', c.updateAlarm);
+app.put('/piRoutines/updateStreak/:oldStreak/:newStreak', c.updateStreak);
+app.post('/piRoutine/run', c.runPump);
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
