@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useMemo, useContext } from 'react';
 import ReactDOM from 'react-dom';
-import { Temporal, Intl, toTemporalInstant } from '@js-temporal/polyfill';
-import axios from 'axios';
 import styled from 'styled-components';
+import axios from 'axios';
 import App from './App';
 import Spinner from './Spinner';
-import useGeolocation from "./Utils/useGeolocation";
-import convert from './Utils/convert';
+import useGeolocation from "./useGeolocation";
+import { Temporal, Intl, toTemporalInstant } from '@js-temporal/polyfill';
+import convert from './convert';
 
 const DataContext = React.createContext();
 
@@ -20,29 +20,17 @@ const Context = () => {
     error,
     data: { latitude, longitude },
   } = useGeolocation();
+  const [time, setTime] = useState();
   const [changeLat, getChangeLat] = useState(0);
   const [changeLon, getChangeLon] = useState(0);
   const [initialLat, setInitialLat] = useState(latitude);
   const [initialLon, setInitialLon] = useState(longitude);
   const [once, setOnce] = useState(false);
-  const [once2, setOnce2] = useState(false);
-  const [distance, setDistance] = useState(0);
-
-  const [currentTime, setCurrentTime] = useState();
+  const [distance, updateDistance] = useState(0);
   const [alarmTime, setAlarmTime] = useState();
-  const [initialAlarmTime, setInitialAlarmTime] = useState();
   const [streak, setStreak] = useState();
   let interval;
   let clock;
-
-  const resetIntialAlarm = () => {
-    setInitialAlarmTime(() => alarmTime);
-  };
-
-  if (!once2 && alarmTime) {
-    resetIntialAlarm();
-    setOnce2(() => true);
-  }
 
   if (!once && latitude && longitude) {
     setInitialLat(() => latitude);
@@ -64,40 +52,35 @@ const Context = () => {
 
   // get alarm data
   const getAlarmTime = () => {
-    axios.get('/alarmTime')
-      .then((res) => {
-        setAlarmTime(() =>  new Temporal.PlainTime(res.data[0].hour, res.data[0].minute));
-        setInitialAlarmTime(() =>  new Temporal.PlainTime(res.data[0].hour, res.data[0].minute));
-      })
+    axios.get('/alarm')
+      .then((res) => { setTime(() => res.data) })
       .catch((err) => console.log('err?: ', err));
   };
   const getStreak = () => {
     axios.get('/streak')
-      .then((res) => { setStreak(() => res.data[0].streak) })
+      .then((res) => { setStreak(() => res.data[0]) })
       .catch((err) => console.log('err?: ', err));
   };
 
   // uncomment:
-  useEffect(() => {
-  if (!alarmTime) {
-    getAlarmTime();
-    // setAlarmTime(() => new Temporal.PlainTime(6, 5)); // remove when ready for backend
-  }
-  if (!streak) {
-    getStreak();
-    // setStreak(() => 8); // remove when ready for backend
-  }
-  }, [streak, initialAlarmTime])
+  // useEffect(() => {
+  // if (!alarmTime) {
+  //   getAlarmTime();
+  // }
+  // if (!streak) {
+  //   getStreak();
+  // }
+  // }, [])
 
   useEffect(() => {
     dif(changeLat, latitude, initialLat, setInitialLat, getChangeLat);
     dif(changeLon, longitude, initialLon, setInitialLon, getChangeLon);
-    setDistance(() => dConvert(changeLat));
-  }, [latitude]);
+    updateDistance(() => dConvert(changeLat));
+  }, [latitude, time]);
 
 
   const handleCurrentTime = () => {
-  setCurrentTime(() => convert(Temporal.Now.plainTimeISO()));
+  setTime(() => convert(Temporal.Now.plainTimeISO()));
   };
   useEffect(() => {
     clock = setInterval(() => handleCurrentTime(), 1000);
@@ -106,15 +89,19 @@ const Context = () => {
       clearInterval(clock);
       // clearInterval(interval);
     }
-  }, [currentTime]);
+  }, [time]);
 
+  // // delete testing code:
+  // if (!time) {
+  //   setTime(() => convert(now));
+  // }
 
   const value = useMemo(() => ({
-    distance, setDistance, latitude, longitude, streak, setStreak, currentTime, setCurrentTime, alarmTime, setAlarmTime, initialAlarmTime, setInitialAlarmTime
-  }), [currentTime]);
+    time, distance, latitude, longitude, streak, time, alarmTime
+  }), [time]);
 
   // console.log(time);
-  return (!currentTime || !alarmTime) ? <Spinner /> : (
+  return !time ? <Spinner /> : (
     <DataContext.Provider value={value}>
       <App />
     </DataContext.Provider>

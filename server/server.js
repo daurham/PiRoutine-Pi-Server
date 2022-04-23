@@ -21,34 +21,41 @@ logger(String(req.body.loc), req.body.des);
   res.sendStatus(201);
 });
 
-app.get('/pi', (req, res) => {
-  res.status(200).send(lox);
-});
+// app.get('/pi', (req, res) => {
+//   res.status(200).send(lox);
+// });
 
-app.get('/alarm', (req, res) => {
+app.get('/alarmTime', (req, res) => {
   console.log('getting alarm data');
-  axios.get('http://192.168.0.164:4000/piRoutines')
+  axios.get(`http://192.168.0.164:3000/piRoutine/${'alarmtime'}`)
     .then((result) => res.status(200).send(result.data))
     .catch((err) => console.log('Issue getting data: ', err));
 });
-app.post('/setup', (req, res) => {
-  console.log('getting alarm data');
-  let data = req.body;
-  console.log(data);
-  axios.post(`http://192.168.0.164:4000/piRoutines/${data.time}/${data.routine}`)
-    .then((result) => res.status(201).send(result.data))
+app.get('/streak', (req, res) => {
+  // console.log('getting streak data');
+  axios.get(`http://192.168.0.164:3000/piRoutine/${'streakcount'}`)
+    .then((result) => res.status(200).send(result.data))
     .catch((err) => console.log('Issue getting data: ', err));
 });
-app.put('/disarm/:isArmed/:routine', (req, res) => {
-  console.log('updating alarm data');
-  axios.put(`http://192.168.0.164:4000/piRoutines/${req.params.isArmed}/${req.params.routine}`)
-    .then((result) => res.status(201).send(result.data))
+app.put('/updateAlarm', (req, res) => {
+  // console.log('getting alarm data');
+  let data = req.body;
+  console.log('updating alarm: ',data);
+  axios.put(`http://192.168.0.164:3000/piRoutine/updateAlarm/${data.oldAlarm}/${data.newAlarm}`, data)
+    .then((result) => res.status(203).send(result.data))
+    .catch((err) => console.log('Issue getting data: ', err));
+});
+app.put('/streak/:oldStreak/:newStreak', (req, res) => {
+  console.log('updating streaks: ', req.params.oldStreak);
+  // console.log('updating alarm data');
+  axios.put(`http://192.168.0.164:3000/piRoutine/updateStreak/${req.params.oldStreak}/${req.params.newStreak}/`)
+    .then((result) => res.status(203).send(result.data))
     .catch((err) => console.log('Issue getting data: ', err));
 });
 
-app.post('/pi/run', (req, res) => {
+app.post('/pi/run', (req, res) => { // run water
   console.log('reached local server!, Now requesting the Pi');
-  axios.post('http://192.168.0.164:4000/piRun');
+  axios.post('http://192.168.0.164:3000/piRoutine/run');
   res.sendStatus(201);
 });
 
