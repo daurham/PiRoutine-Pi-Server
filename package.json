@@ -1,14 +1,11 @@
 {
   "name": "routinepi",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "- clone on your pi and local computer. - run: npm install pi: - From the dir root, run: sudo node piServer/server.js local computer: - termianl 1 run: npm start - termianl 2 run: npm run server",
-  "main": "webpack.config.js",
   "scripts": {
-    "start": "webpack -w",
-    "server": "nodemon server/server.js -w",
-    "pi": "sudo node piServer/server.js",
-    "aws": "bash server/init.sh",
-    "test": "sudo node piServer/testServer.js"
+    "start": "nodemon server/index.js",
+    "server": "nodemon server/index.js -w",
+    "test": "nodemon server/timer/timer.js"
   },
   "repository": {
     "type": "git",
@@ -42,7 +39,7 @@
     "babel-loader": "^8.2.3",
     "css-loader": "^6.7.1",
     "file-loader": "^6.2.0",
-    "nodemon": "^2.0.15",
+    "nodemon": "^2.0.16",
     "style-loader": "^3.3.1",
     "ttf-loader": "github:unimonkiez/ttf-loader",
     "url-loader": "^4.1.1",

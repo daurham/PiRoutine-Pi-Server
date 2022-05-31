@@ -15,9 +15,15 @@ create table streakcount(
   streak int
 );
 
+create table isdefused(
+  id int auto_increment primary key,
+  defusal int
+);
+
 insert into alarmtime (hour, minute) values (6, 5);
 insert into streakcount (streak) values (0);
+insert into isdefused (defusal) values (0); -- 0 = false, 1 = true
 
--- insert into alarmtime (time_, habit, armed) values ('6:05:00 AM', 'Wake Up', 1);
--- insert into alarmtime (time_, habit, armed) values ('6:05:00 AM', 'Test', 1);
+-- insert into alarmtime (hour, minute) values (6, 5);
+-- insert into alarmtime (hour, minute) values (10, 5);
 -- mysql -u daurham -p < RoutinePi/piServer/database/schema.sql; // uploads this schema from pi root
