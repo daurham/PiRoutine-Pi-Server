@@ -9,5 +9,8 @@ const updateAlarm = (q, d, cb) => {
 const updateStreak = (q, d, cb) => {
   db.query(q, d, cb);
 };
+const updateDefusal = (q, d, cb) => {
+  db.query(q, d, cb);
+};
 
-module.exports = { getData, updateAlarm, updateStreak };
+module.exports = { getData, updateAlarm, updateStreak, updateDefusal };

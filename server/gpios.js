@@ -7,7 +7,9 @@ const redLED = new Gpio(23, 'out'); // 3.3Vs, 2Vf, 20mA(If) == 65r| = using 47r
 const yellowLED = new Gpio(22, 'out'); // 3.3Vs, 2.1Vf, 20mA(If) == 60| = using 47r
 const blueLED = new Gpio(4, 'out'); // 5Vs, 3.6Vf, 30mA(If) == 47r| = using 47r/cant3.3
 const whiteLED = new Gpio(27, 'out'); // 5Vs, 3.6Vf, 30mA(If) == 47r| = using 47r/cant3.3
-const modules = { relay, greenLED, redLED, blueLED, whiteLED, yellowLED };
+const mods = { relay, greenLED, redLED, blueLED, whiteLED, yellowLED };
+
+// TODO: Create code for a defuse button & export
 
 let interval;
 let active = false;
@@ -31,4 +33,13 @@ const off = (mod) => { mod.writeSync(0); state = false; };
 
 const on = (mod) => { mod.writeSync(1); state = true; };
 
-module.exports = { on, off, runLED, flash, stopFlash, modules, blinkFns };
+const runPump = (test) => {
+  let pump = (test ? yellowLED : relay);
+    on(pump);
+    setTimeout(() => off(pump), 7000);
+    console.log((state ? 'off' : 'on'));
+    state = (state ? false : true);
+};
+
+
+module.exports = { on, off, runLED, flash, stopFlash, mods, blinkFns, runPump };
