@@ -1,26 +1,25 @@
 const model = require('./model.js');
 const { updateClientsAlarm, updateClientsDefuseStatus, updateClientsStreak } = require('./backend-client');
-// const gpios = require('./gpios.js');
-// const relay = gpios.modules.relay;
-// const g = gpios.modules.greenLED;
-// const r = gpios.modules.redLED;
-// const y = gpios.modules.yellowLED;
-// const on = gpios.on;
-// const off = gpios.off;
-// const blinkG = gpios.blinkFns.blinkG;
-// const blinkR = gpios.blinkFns.blinkR;
-// const blinkY = gpios.blinkFns.blinkY;
-// const dance = gpios.blinkFns.dance;
-// let gd = gpios.runLED(g, blinkG, 1000);
-// let rd = gpios.runLED(r, blinkR, 1000);
-// let yd = gpios.runLED(y, blinkY, 1000);
+const { mods, on, off, blinkFns, runLED, runPump } = require('./Gpio/index.js');
+const relay = mods.relay;
+const g = mods.greenLED;
+const r = mods.redLED;
+const y = mods.yellowLED;
+const blinkG = blinkFns.blinkG;
+const blinkR = blinkFns.blinkR;
+const blinkY = blinkFns.blinkY;
+const dance = blinkFns.dance;
+let gd = () => runLED(g, blinkG, 1000);
+let rd = () => runLED(r, blinkR, 1000);
+let yd = () => runLED(y, blinkY, 1000);
 
 // let state = false;
 
 
 
-const runPump = (req, res) => {
-// gpios.runPump('test'); // test == Yellow LED
+const runThePump = (req, res) => {
+  gpios.runPump('test'); // test == Yellow LED
+  console.log('running');
   res.sendStatus(201);
 };
 
@@ -47,47 +46,52 @@ const getData = (req, res = null) => {
 };
 
 const updateAlarm = (req, res, updateBackend) => {
-  // console.log(req)
+  console.log('________________________________________');
+  // let q = 'update alarmtime set hour=?, minute=?, tod=?'; TODO: Refact DB to accept TOD.
   let q = 'update alarmtime set hour=?, minute=?';
-  console.log(req.body);
-  let data = [Number(req.body.newAlarm.h), Number(req.body.newAlarm.m), Number(req.body.oldAlarm.h), Number(req.body.oldAlarm.m)];
-  console.log(data);
+  console.log('new alarm Data: ', req.params);
+  let data = [Number(req.params.hour), Number(req.params.minute), req.params.tod];
+  console.log('updating alarm to: ', data);
   model.updateAlarm(q, data, (err, result) => {
-    if (err) { console.log('db err: ', err); res.sendStatus(500); }
-    else { updateBackend(); res.status(203).send(result); } 
+    // if (err) { console.log('db err: ', err); res.sendStatus(500); } // Normal code
+    if (err) { console.log('db err: ', err); res.sendStatus(500); } // Test code
+    else { updateBackend(); res.status(203).send(result); }
   })
 };
 
 const updateStreak = (req, res = null, updateBackend) => {
   let data;
-  if (res) data = [Number(req.params.newStreak), Number(req.params.oldStreak)];
-  if (!res) data = [Number(req.newStreak), Number(req.oldStreak)];
+  if (res) data = [Number(req.params.newStreak)];
+  if (!res) data = [Number(req.newStreak)];
   let q = `update streakcount set streak=?`;
-  model.updateStreak(q, data, (err, result) => { 
+  console.log('updating streak: ', data);
+  model.updateStreak(q, data, (err, result) => {
     if (res) { // client handling
-      if (err) { console.log('db err: ', err); res.sendStatus(500); } 
-      else { console.log(result, new Date().toString()); updateBackend(); res.status(203).send(result); }
+      if (err) { console.log('db err: ', err); res.sendStatus(500); }
+      else { console.log('Streak updated:', result, new Date().toString()); updateBackend(); res.status(203).send(result); }
     } else { // backend handling
-      if (err) console.log('db err: ', err);
-      console.log(result, new Date().toString()); req.cb(result); updateClientsStreak(); // replace req.cb with backend-client functions.
+      if (err) console.error('db err: ', err);
+      console.log('Streak updated @:', new Date().toString()); //req.cb(result); //updateClientsStreak(); // replace req.cb with backend-client functions.
     }
-    })
+  })
 };
 
-const updateDefusal = (req, res = null) => {
+const updateDefusal = (req, res = null, updateBackend) => {
   let data;
-  if (res) data = [Number(req.params.newVal), Number(req.params.oldVal)];
-  if (!res) data = [Number(req.newVal), Number(req.oldVal)];
-  let q = `update isDefused set defusal=?`;
-  model.updateDefusal(q, data, (err, result) => { 
+  if (res && !req.params.newVal) data = [1];
+  if (res && req.params.newVal) data = [Number(req.params.newVal)];
+  if (!res) data = [Number(req.newVal)];
+  let q = `update isdefused set defusal=?`;
+  model.updateDefusal(q, data, (err, result) => {
     if (res) { // client handling
-      if (err) { console.log('db err: ', err); res.sendStatus(500); } 
+      // if (err) { console.log('db err: ', err); res.sendStatus(500); } // Normal code
+      if (err) { res.sendStatus(500); } // Testing code
       else { console.log(result, new Date().toString()); updateBackend(); res.status(203).send(result); }
     } else { // backend handling
       if (err) console.log('db err: ', err);
-      console.log(result, new Date().toString()); req.cb(result); updateClientsDefuseStatus(); // replace req.cb with backend-client functions.
+      console.log('Updating Defusal @', new Date().toString().slice(0, 12)); req.cb(); //updateClientsDefuseStatus(); // replace req.cb with backend-client functions.
     }
-    })
+  })
 };
 
 const distanceMet = (req, res) => {
@@ -95,7 +99,7 @@ const distanceMet = (req, res) => {
   res.sendStatus(200)
 }
 
-module.exports = { getData, updateAlarm, runPump, updateStreak, updateDefusal, distanceMet, notifyErr };
+module.exports = { getData, updateAlarm, runThePump, updateStreak, updateDefusal, distanceMet, notifyErr };
 
 
 

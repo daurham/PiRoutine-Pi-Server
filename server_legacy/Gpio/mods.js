@@ -1,0 +1,17 @@
+const Gpio = require('onoff').Gpio;
+
+const relay = new Gpio(25, 'out');
+// const greenLED = new Gpio(24, 'out'); // 3.3Vs, 2.1Vf, 20mA(If) == 60r| = using 47r
+// const redLED = new Gpio(23, 'out'); // 3.3Vs, 2Vf, 20mA(If) == 65r| = using 47r
+const yellowLED = new Gpio(22, 'out'); // 3.3Vs, 2.1Vf, 20mA(If) == 60| = using 47r
+// const blueLED = new Gpio(4, 'out'); // 5Vs, 3.6Vf, 30mA(If) == 47r| = using 47r/cant3.3
+// const whiteLED = new Gpio(27, 'out'); // 5Vs, 3.6Vf, 30mA(If) == 47r| = using 47r/cant3.3
+const button = new Gpio(23, 'in', 'both'); // 
+
+
+// const mods = { relay, yellowLED };
+const mods = { button, relay, yellowLED };
+// const mods = { button, relay, greenLED, redLED, yellowLED };
+// const mods = { button, relay, greenLED, redLED, blueLED, whiteLED, yellowLED };
+
+module.exports = { mods };

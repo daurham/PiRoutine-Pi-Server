@@ -1,13 +1,20 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+// const {fn} = require('./closure');
+// const {fn.f2} ,= require('./closure');
+// const {fn.f3} ,= require('./closure');
 const { Temporal } = require('@js-temporal/polyfill');
 const controller = require('../controller');
 const convert = require('./convert');
-const { on, off, runPump, mods } = require('../gpios');
+const { on, off, runPump, mods, button, blinkFns, keepOff, keepOn } = require('../Gpio');
 const activateYellowLED = () => on(mods.yellowLED);
 const activateRedLED = () => on(mods.redLED);
-const activateGreenLED = () => on(mods.greenLED);
+// const activateGreenLED = () => on(mods.greenLED);
 const deactivateYellowLED = () => off(mods.yellowLED);
 const deactivateRedLED = () => off(mods.redLED);
-const deactivateGreenLED = () => off(mods.greenLED);
+// const deactivateGreenLED = () => off(mods.greenLED);
+// let greenLED = false;
+const { yellowLED } = mods;
 
 let failsafe = false;
 let alarmTime;
@@ -18,7 +25,7 @@ let isDefused;
 // Finish backend / client shared Defuse fuctionality. // add table to db. Add request to client code, which will notify backend
 // Finish backend / client shared Streak Failure fuctionality. // Is this set? hm..
 
-
+// activateGreenLED()
 
 // streak failure vars:
 let failedStreak = false;
@@ -33,14 +40,14 @@ const toggleTOD = (time) => { let tod = time.tod(); time = time.slice(0, -2); re
 const currTime = () => Temporal.Now.plainTimeISO().toLocaleString();
 
 const getCurrentTime = () => controller.getData({ table: 'alarmtime', cb: (time) => alarmTime = convert((new Temporal.PlainTime(((time[0].hour === 24 ? 0 : time[0].hour)), time[0].minute))) })
-const getCurrentStreak = () => controller.getData({ table: 'streak', cb: (streak) => currStreak = streak[0].streak });
+const getCurrentStreak = () => controller.getData({ table: 'streakcount', cb: (streak) => currStreak = streak[0].streak });
 const getDefuseStatus = () => controller.getData({ table: 'defusal', cb: (status) => isDefused = (status[0].defusal === 0 ? false : true) });
 const resetStreak = () => controller.updateStreak({ newStreak: 0, oldStreak: currStreak, cb: console.log });
-const updateDefusal = () => controller.updateDefusal({ newVal: (isDefused ? 0 : 1), oldVal: (isDefused ? 1 : 0), cb: (status) => isDefused = (status[0].defusal === 0 ? false : true) });
+const updateDefusal = () => controller.updateDefusal({ newVal: (isDefused ? 0 : 1), oldVal: (isDefused ? 1 : 0), cb: getDefuseStatus });
 const incrementStreak = () => controller.updateStreak({ newStreak: currStreak + 1, oldStreak: currStreak, cb: console.log });
 const initiateStreakFailure = () => activateRedLED(); // turn on red LED
 
-const resetStreakFailure = () => {
+const resetStreakFailure = () => { 
   failedStreak = false;
   deactivateRedLED(); // turn off red LED
   console.log('Red Punishment Over!')
@@ -51,7 +58,7 @@ const successfulStreak = () => {
 };
 const runAlarm = () => {
   failedStreak = true;
-  runPump('test'); // test == Yellow LED
+  runPump('test'); // test == Yellow LED, remove for pump running.
   initiateStreakFailure(); // runs on the red LED for 20hrs
   resetStreak();
 };
@@ -60,21 +67,61 @@ const get20thHour = () => {
   let emitRedLEDUnitlThisTime = convert(new Temporal.PlainTime(((alarmTime.tod() === 'PM' ? Number(alarmTime.hr()) + 12 : Number(alarmTime.hr())) + 20) % 24, alarmTime.min()))
   if (alarmTime.hr() == 12) emitRedLEDUnitlThisTime = toggleTOD(emitRedLEDUnitlThisTime);
   return emitRedLEDUnitlThisTime;
-}
 
-const App = () => {
+}
+//* TODO: Look into if I HAVE to to use a power source JUST for the button.
+let isClicked = false;
+button.watch((err, value) => {
+  if (err) {
+    console.log('There was an Error: ', err);
+
+  } else {
+    if (value === 1) isClicked = true;
+    if (value === 0) isClicked = false;
+    console.log('Click Event: ', currTime(), 'isClicked:', isClicked, value);
+    
+    if (value === 1) {
+      
+      // console.log('INSIDE Click Event: ', currTime(), 'isClicked:', isClicked);
+      setTimeout(() => {
+        if (value === 1 && isClicked) {
+          // console.log('EMC Wrapped');
+          updateDefusal();
+        }
+      })
+    }
+
+  }
+});
+process.on('SIGINT', () => { button.unexport(); yellowLED.unexport(); });  
+//  */
+
+const initialize = (alarmTime, currStreak, isDefused) => {
   if (!alarmTime) getCurrentTime();
   if (!currStreak) getCurrentStreak();
   if (isDefused === undefined) getDefuseStatus();
-  activateGreenLED();
+};
+
+
+// activateRedLED(); 
+const App = () => {
+  initialize();
+  // on(yellowLED);
+  // defuseBlink();
   let intervalObj = setInterval(() => { // begin interval 
-    console.log('currTime: ', currTime(), 'alarmTime: ', alarmTime, 'failedStreak: ', failedStreak, 'isDefused: ', isDefused, 'streak: ', currStreak);
+    // console.log('closure Test:', fn.f());
+    // console.log('closure Test:', fn.f2() );
+    // console.log('closure Test:', fn.f3() );
+    if (isDefused) keepOn(); //on(mods.yellowLED);
+    if (!isDefused) keepOff(); //off(mods.yellowLED);
+    // if (currTime().secUnit() == 0) console.log('isDefused: ', isDefused);
+    if (currTime().secUnit() == 0)console.log(`\ncurrTime:${currTime()}n\alarmTime: ${alarmTime}n\failedStreak: ${failedStreak} \nisDefused: ${isDefused} streak: ${currStreak}`);
     if (failedStreak && (currTime() === get20thHour())) resetStreakFailure()// Check to disble streakFailure
     if (currTime() === alarmTime && !isDefused) runAlarm(); // Handle alarm
     if (currTime() === alarmTime && isDefused) successfulStreak(); // Handle streak increment
     if (failsafe) { // check if somethings broke, disable interval
       clearInterval(intervalObj);
-      deactivateGreenLED();
+      // deactivateGreenLED();
     }
   }, 1000);
 };
