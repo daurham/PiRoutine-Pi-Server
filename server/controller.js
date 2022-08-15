@@ -8,13 +8,12 @@ const notifyErr = (req, res) => {
   res.sendStatus(201);
 };
 
-const getData = (req, res, internal, cb) => {
+const getData = (req, res, alarmclockReq, cb) => {
   let query;
-  if (internal) {
-    if (internal.source === 'alarmtime') query = 'select * from alarmtime';
-    if (internal.source === 'streakcount') query = 'select * from streakcount';
-    if (internal.source === 'isdefused') query = 'select * from isdefused';
-    model.getDate(query, (err, result) => {
+  if (alarmclockReq) {
+    const { table } = alarmclockReq;
+    query = `select * from ${table}`; // alarmtime, streakcount, isdisarmed
+    model.getData(query, (err, result) => {
       if (err) {
         console.log('Error getting data from db:', err);
       } else {
@@ -23,7 +22,7 @@ const getData = (req, res, internal, cb) => {
     });
   } else {
     // PIROUTINE.COM
-    const { table } = req.params; // must be alarmtime, streakcount or isdefused
+    const { table } = req.params; // must be alarmtime, streakcount or isdisarmed
     query = `select * from ${table}`;
     model.getData(query, (err, result) => {
       if (err) { // client handling
@@ -37,10 +36,11 @@ const getData = (req, res, internal, cb) => {
   }
 };
 
-const updateAlarm = (req, res, internal, cb) => {
+const updateAlarm = (req, res, alarmclockReq, cb) => {
   const query = 'update alarmtime set hour=?, minute=?, tod=?'; // TODO: Refact DB to accept TOD.
-  if (internal) {
-    const { data } = internal;
+  // ALARMCLOCK
+  if (alarmclockReq) {
+    const { data } = alarmclockReq;
     model.updateAlarm(query, data, (err, result) => {
       if (err) {
         console.log('Error updating time from db:', err);
@@ -57,16 +57,47 @@ const updateAlarm = (req, res, internal, cb) => {
         console.log('Error updating time from db:', err);
         res.sendStatus(500);
       } else {
+        cb(result);
         res.status(203).send(result);
       }
     });
   }
 };
 
-const updateStreak = (req, res, internal, cb) => {
+const updateDisarmStatus = (req, res, cb, alarmclockReq) => {
+  const query = 'update isdisarmed set disarmedstatus=?';
+  // ALARMCLOCK
+  if (alarmclockReq) {
+    const { data } = alarmclockReq;
+    console.log(model);
+    model.updateDisarmStatus(query, [data], (err, result) => {
+      if (err) {
+        console.log('Error updating isdisarmed from db:', err);
+        cb(err);
+      } else {
+        cb(result);
+      }
+    });
+  } else {
+    // PIROUTINE.COM
+    const data = [Number(req.params.newStatus)];
+    model.updateDisarmStatus(query, [data], (err, result) => {
+      if (err) {
+        console.log('Error updating isdisarmed from db:', err);
+        res.sendStatus(500);
+      } else {
+        cb(result);
+        res.status(203).send(result);
+      }
+    });
+  }
+};
+
+const updateStreak = (req, res, alarmclockReq, cb) => {
+  // ALARMCLOCK
   const query = 'update streakcount set streak=?';
-  if (internal) {
-    const { data } = internal;
+  if (alarmclockReq) {
+    const { data } = alarmclockReq;
     model.updateStreak(query, data, (err, result) => {
       if (err) {
         console.log('Error updating streak from db:', err);
@@ -83,32 +114,7 @@ const updateStreak = (req, res, internal, cb) => {
         console.log('Error updating streak from db:', err);
         res.sendStatus(500);
       } else {
-        res.status(203).send(result);
-      }
-    });
-  }
-};
-
-const updateDefusal = (req, res, cb, internal) => {
-  const query = 'update isdefused set defusal=?';
-  if (internal) {
-    const { data } = internal;
-    model.updateDefusal(query, data, (err, result) => {
-      if (err) {
-        console.log('Error updating isdefused from db:', err);
-        cb(err);
-      } else {
         cb(result);
-      }
-    });
-  } else {
-    // PIROUTINE.COM
-    const data = [Number(req.params.newVal)];
-    model.updateDefusal(query, data, (err, result) => {
-      if (err) {
-        console.log('Error updating isdefused from db:', err);
-        res.sendStatus(500);
-      } else {
         res.status(203).send(result);
       }
     });
@@ -126,7 +132,7 @@ module.exports = {
   updateAlarm,
   // runThePump,
   updateStreak,
-  updateDefusal,
+  updateDisarmStatus,
   distanceMet,
   notifyErr,
 };

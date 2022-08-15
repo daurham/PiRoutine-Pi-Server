@@ -2,7 +2,6 @@ const helpersClosure = ({ relay, yellowLED, button }) => {
   const helpers = {};
 
   let isClicked = false;
-  // let isDisarmed;
   let state = false;
   let interval;
   let active;
@@ -45,6 +44,19 @@ const helpersClosure = ({ relay, yellowLED, button }) => {
     mod.writeSync(state ? 1 : 0);
   };
 
+  helpers.watchLED = (disarmStatus) => {
+    if (
+      disarmStatus === true || disarmStatus === 'true'
+      || disarmStatus === 1 || disarmStatus === '1'
+    ) {
+      yellowLED.writeSync(1);
+      state = true;
+    } else {
+      yellowLED.writeSync(0);
+      state = false;
+    }
+  };
+
   helpers.onClick = (clickEvent) => {
     button.watch((err, value) => {
       if (err) {
@@ -67,6 +79,11 @@ const helpersClosure = ({ relay, yellowLED, button }) => {
       button.unexport();
       yellowLED.unexport();
     });
+  };
+
+  helpers.toggleDisarm = (wasClicked, socketEvent) => {
+    helpers.toggleMod(yellowLED);
+    if (wasClicked) socketEvent();
   };
 
   helpers.runPump = (test) => {

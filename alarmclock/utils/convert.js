@@ -1,10 +1,10 @@
 /** Turns a temporal date obj into a readable time.
  *  */
 
-const T = require('@js-temporal/polyfill').Temporal.Now;
+const Temporal = require('@js-temporal/polyfill').Temporal.Now;
 
 const convert = (time) => {
-  const t = time || T.plainTimeISO();
+  const t = time || Temporal.plainTimeISO();
   let resultTime = '';
   const { hour, minute, second } = t;
   // Get hour
@@ -13,11 +13,11 @@ const convert = (time) => {
   if (hour > 12) resultTime += hour % 12;
   resultTime += ':';
   // Get min
-  if (minute < 10) resultTime += String('0' += minute);
+  if (minute < 10) resultTime += `0${minute}`;
   if (minute > 9) resultTime += String(minute);
   resultTime += ':';
   // Get sec
-  if (second < 10) resultTime += String('0' += second);
+  if (second < 10) resultTime += `0${second}`;
   if (second > 9) resultTime += String(second);
   resultTime += ':';
   // Get tod
@@ -30,6 +30,4 @@ const convert = (time) => {
 // ${(t.second < 10 ? String('0' + t.second) : t.second)}
 // ${(t.hour > 11 ? 'PM' : 'AM')}`
 
-module.exports = {
-  convert,
-};
+module.exports = convert;

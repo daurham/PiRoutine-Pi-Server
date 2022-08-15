@@ -1,18 +1,16 @@
+const axios = require('axios');
 const io = require('./index').getIO();
 const clients = require('./Clients');
 const {
   getData,
   updateAlarm,
-  updateDefusal,
-  updateStreak
+  updateDisarmStatus,
+  updateStreak,
 } = require('../controller');
 
 module.exports = (app) => {
   const getTime = () => new Date().toLocaleTimeString();
 
-  // let alarmTime;
-  // let isDisarmed;
-  // let streak;
   io.on('connection', (socket) => {
     // INITAILIZE SESSION
     clients.add(socket.id.cut(), getTime());
@@ -21,7 +19,6 @@ module.exports = (app) => {
     socket.on('disconnecting', () => { });
 
     socket.on('disconnect', () => {
-      // const clientNum = clients.getNum(socket.id);
       console.log(`${socket.id.cut()} has disconnected`);
       clients.remove(socket.id.cut());
       console.log('Clients remaining: ', clients.List);
@@ -29,40 +26,85 @@ module.exports = (app) => {
     });
 
     // ALARM TIME
+    // get
     socket.on('get-alarm-time', () => {
-      getData(null, null, { source: 'alarmtime' }, (alarmTime) => {
+      getData(null, null, { table: 'alarmtime' }, (alarmTime) => {
         io.emit('got-alarm-time', alarmTime);
       });
     });
-    socket.on('update-alarm-time', (time) => {
-      console.log('updating alarm to:', time);
-      updateAlarm(null, null, { data: time }, (result) => {
-        io.emit('updated-alarm-time', result);
+    app.get('/get-alarm-time/:table', getData);
+
+    // update
+    socket.on('update-alarm-time', (newAlarmTime) => {
+      console.log('updating alarm to:', newAlarmTime);
+      updateAlarm(null, null, { data: newAlarmTime }, async (updatedAlarmTime) => {
+        // UPDATE CLIENT
+        try {
+          io.emit('updated-alarm-time', updatedAlarmTime);
+          await axios.get('https://www.piroutine.com/get-alarrm-update');
+        } catch (err) {
+          console.log('Error notifying client to update alarm', err);
+        }
+      });
+    });
+    app.patch('/update-alarm-time/:hour/:minute/:tod', (req, res) => {
+      updateAlarm(req, res, null, (updatedAlarmTime) => {
+        io.emit('updated-alarm-time', updatedAlarmTime);
       });
     });
 
-    // DEFUSE VALUE
-    socket.on('get-defuse', () => {
-      getData(null, null, { source: 'isdefused' }, (defuseValue) => {
-        io.emit('got-defuse-value', defuseValue);
+    // DISARM STATUS
+    // get
+    socket.on('get-disarm-status', () => {
+      getData(null, null, { table: 'isdisarmed' }, (disarmStatus) => {
+        io.emit('got-disarm-status', disarmStatus);
       });
     });
-    socket.on('update-defuse', (value) => {
-      updateDefusal(null, null, { data: value }, (result) => {
-        io.emit('updated-defuse-value', result);
+    app.get('/get-disarm-status/:table', getData);
+
+    // update
+    socket.on('update-disarm-status', (newStatus) => {
+      updateDisarmStatus(null, null, { data: newStatus }, async (updatedStatus) => {
+        // UPDATE CLIENT
+        try {
+          io.emit('updated-disarm-status', updatedStatus);
+          await axios.get('https://www.piroutine.com/get-disarm-update');
+        } catch (err) {
+          console.log('Error notifying client to update disarm', err);
+        }
+      });
+    });
+    app.patch('/update-disarm-status/:newStatus', (req, res) => {
+      updateDisarmStatus(req, res, null, (updatedStatus) => {
+        io.emit('updated-disarm-status', updatedStatus);
       });
     });
 
-    // STREAK VALUE
-    socket.on('get-streak', () => {
-      getData(null, null, { source: 'streakcount' }, (streak) => {
-        io.emit('got-streak-value', streak);
+    // STREAK COUNT
+    // get
+    socket.on('get-streak-count', () => {
+      getData(null, null, { table: 'streakcount' }, (streakCount) => {
+        io.emit('got-streak-count', streakCount);
       });
     });
-    socket.on('update-streak', (value) => {
-      console.log('updating streak to:', value);
-      updateStreak(null, null, { data: value }, (result) => {
-        io.emit('updated-streak-value', result);
+    app.get('/get-streak-count/:table', getData);
+
+    // update
+    socket.on('update-streak-count', (newStreakCount) => {
+      console.log('updating streak to:', newStreakCount);
+      updateStreak(null, null, { data: newStreakCount }, async (updatedStreakCount) => {
+        // UPDATE CLIENT
+        try {
+          io.emit('updated-streak-count', updatedStreakCount);
+          await axios.get('https://www.piroutine.com/get-streak-update');
+        } catch (err) {
+          console.log('Error notifying client to update streak', err);
+        }
+      });
+    });
+    app.patch('/update-streak-count/:newStreak', (req, res) => {
+      updateStreak(req, res, null, (updatedStreakCount) => {
+        io.emit('updated-streak-count', updatedStreakCount);
       });
     });
   });
