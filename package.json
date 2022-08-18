@@ -1,13 +1,13 @@
 {
   "name": "piroutine-server",
-  "version": "3.0.0",
-  "description": "A server for a raspberry pi, that can handle 2 directional communication with a client",
+  "version": "3.1.0",
+  "description": "A raspberry pi server and gpio alarmclock client, that can handle 2 directional communication with an EC2 client",
   "scripts": {
-    "start": "concurrently --kill-others \"npm run server\" \"npm run gpio-client\"",
-    "start-legacy": "node server/index.js",
-    "gpio-client": "node server/client.js -w",
+    "start": "concurrently --kill-others \"npm run server\" \"npm run alarmclock\"",
+    "alarmclock": "node alarmclock/index.js -w",
     "server": "node server/index.js -w",
-    "test": "nodemon server/timer/timer.js"
+    "gpio": "node tests/gpio.test.js",
+    "test": "node tests/index.test.js"
   },
   "repository": {
     "type": "git",
@@ -21,11 +21,9 @@
   },
   "homepage": "https://github.com/daurham/RoutinePi#readme",
   "dependencies": {
-    "@js-temporal/polyfill": "^0.4.0",
     "axios": "^0.26.1",
     "dotenv": "^16.0.1",
     "express": "^4.17.3",
-    "http-proxy-middleware": "^2.0.6",
     "mysql2": "^2.3.3",
     "onoff": "^6.0.3",
     "socket.io": "^4.5.1",
@@ -39,7 +37,6 @@
     "@types/onoff": "^4.1.0",
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",
-    "concurrently": "^7.3.0",
     "eslint": "^8.21.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^17.0.0",

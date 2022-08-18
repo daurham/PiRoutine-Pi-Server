@@ -1,12 +1,11 @@
-# RoutinePi
+# PiRoutine | Server & Alarmclock
 
-- clone on your pi and local computer.
-- run: npm install
-pi:
-- From the dir root, run: sudo node piServer/server.js
-local computer:
-- termianl 1 run: npm start
-- termianl 2 run: npm run server
+- Clone to your Raspberry Pi
+- Connect to your Pi's mysql database
+- Port Forward the Pi so it's accessible externally
+- Install / set up pm2 to run `server` & `alarmclock` on startup
+- Clone, Install & Deploy the PiRoutine Client & read it's README
 
-- fill out your ideal wake up time, store in database.
-- use a relay module connected to a water pump in a bucket to
+One day, I'll make a video. Meanwhile, just ask if you'd like help setting up.
+
+-Jacob Ernest Daurham

@@ -1,8 +1,5 @@
 const model = require('./model');
-// const { toggleMod, onClick, runPump } = require('./pi-UI/gpio').helpers;
-// const { yellowLED } = require('./pi-UI/gpio/modules');
 
-// stretched goal: include code to send an email / text to myself?
 const notifyErr = (req, res) => {
   console.log('HTTP Error:', new Date().toLocaleTimeString());
   res.sendStatus(201);
@@ -11,6 +8,7 @@ const notifyErr = (req, res) => {
 const getData = (req, res, alarmclockReq, cb) => {
   let query;
   if (alarmclockReq) {
+    console.log('get in alarmclock');
     const { table } = alarmclockReq;
     query = `select * from ${table}`; // alarmtime, streakcount, isdisarmed
     model.getData(query, (err, result) => {
@@ -21,15 +19,17 @@ const getData = (req, res, alarmclockReq, cb) => {
       }
     });
   } else {
+    // console.log('get in EC2');
+    // console.log(req.query);
     // PIROUTINE.COM
-    const { table } = req.params; // must be alarmtime, streakcount or isdisarmed
+    const { table } = req.query; // must be alarmtime, streakcount or isdisarmed
     query = `select * from ${table}`;
     model.getData(query, (err, result) => {
       if (err) { // client handling
         console.log('Error getting data from db:', err);
         res.sendStatus(500);
       } else {
-        console.log(result);
+        // console.log(result);
         res.status(200).send(result);
       }
     });
@@ -51,7 +51,8 @@ const updateAlarm = (req, res, alarmclockReq, cb) => {
     });
   } else {
     // PIROUTINE.COM
-    const data = [Number(req.params.hour), Number(req.params.minute), req.params.tod];
+    console.log(req.body);
+    const data = [Number(req.body.hour), Number(req.body.minute), req.body.tod];
     model.updateAlarm(query, data, (err, result) => {
       if (err) {
         console.log('Error updating time from db:', err);
@@ -64,12 +65,12 @@ const updateAlarm = (req, res, alarmclockReq, cb) => {
   }
 };
 
-const updateDisarmStatus = (req, res, cb, alarmclockReq) => {
+const updateDisarmStatus = (req, res, alarmclockReq, cb) => {
   const query = 'update isdisarmed set disarmedstatus=?';
   // ALARMCLOCK
   if (alarmclockReq) {
     const { data } = alarmclockReq;
-    console.log(model);
+    // console.log(model);
     model.updateDisarmStatus(query, [data], (err, result) => {
       if (err) {
         console.log('Error updating isdisarmed from db:', err);
@@ -80,7 +81,8 @@ const updateDisarmStatus = (req, res, cb, alarmclockReq) => {
     });
   } else {
     // PIROUTINE.COM
-    const data = [Number(req.params.newStatus)];
+    const { data } = req.body;
+    console.log('going int disarm db:', data);
     model.updateDisarmStatus(query, [data], (err, result) => {
       if (err) {
         console.log('Error updating isdisarmed from db:', err);
@@ -98,6 +100,7 @@ const updateStreak = (req, res, alarmclockReq, cb) => {
   const query = 'update streakcount set streak=?';
   if (alarmclockReq) {
     const { data } = alarmclockReq;
+    // console.log('going int streak db:', data);
     model.updateStreak(query, data, (err, result) => {
       if (err) {
         console.log('Error updating streak from db:', err);
@@ -108,8 +111,10 @@ const updateStreak = (req, res, alarmclockReq, cb) => {
     });
   } else {
     // PIROUTINE.COM
-    const data = [Number(req.params.newStreak)];
-    model.updateStreak(query, data, (err, result) => {
+    const data = req.body.data === true ? 1 : 0;
+    // console.log(data);
+    model.updateStreak(query, [data], (err, result) => {
+      // console.log('req', req.body, cb);
       if (err) {
         console.log('Error updating streak from db:', err);
         res.sendStatus(500);
@@ -130,7 +135,6 @@ const distanceMet = (req, res) => {
 module.exports = {
   getData,
   updateAlarm,
-  // runThePump,
   updateStreak,
   updateDisarmStatus,
   distanceMet,

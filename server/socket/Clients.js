@@ -4,13 +4,14 @@ class Clients {
     this.List = {};
   }
 
-  add(id, time) {
+  add(id) {
     const max = this.getMax();
     if (this.find(id)) this.remove(id);
-    const num = `#${max}.`;
-    const joinedAt = time;
+    // const num = `#${max}.`;
+    // const joinedAt = time;
 
-    this.List[max] = { id, num, joinedAt };
+    // this.List[max] = { id, num, joinedAt };
+    this.List[max] = { id };
   }
 
   getNum(targetProp) {
@@ -60,4 +61,3 @@ String.prototype.cut = cut;
 const clientList = new Clients();
 
 module.exports = clientList;
-// exports = clientList;

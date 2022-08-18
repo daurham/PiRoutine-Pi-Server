@@ -1,1 +1,5 @@
-require('./clock').Clock();
+/**
+ * Intiate the alarmclock by running Clock
+ */
+
+require('./Clock').Clock();

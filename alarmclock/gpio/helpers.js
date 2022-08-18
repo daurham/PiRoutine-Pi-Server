@@ -89,9 +89,7 @@ const helpersClosure = ({ relay, yellowLED, button }) => {
   helpers.runPump = (test) => {
     const pump = (test ? yellowLED : relay);
     helpers.on(pump);
-    console.log((state ? 'off' : 'on'));
     setTimeout(() => helpers.off(pump), 7000);
-    console.log((state ? 'off' : 'on'));
   };
 
   return helpers;
