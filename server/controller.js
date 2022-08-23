@@ -1,4 +1,5 @@
 const model = require('./model');
+const { adjustInputTime } = require('./utils');
 
 const notifyErr = (req, res) => {
   console.log('HTTP Error:', new Date().toLocaleTimeString());
@@ -19,10 +20,8 @@ const getData = (req, res, alarmclockReq, cb) => {
       }
     });
   } else {
-    // console.log('get in EC2');
-    // console.log(req.query);
     // PIROUTINE.COM
-    const { table } = req.query; // must be alarmtime, streakcount or isdisarmed
+    const { table } = req.query; // will be alarmtime, streakcount or isdisarmed
     query = `select * from ${table}`;
     model.getData(query, (err, result) => {
       if (err) { // client handling
@@ -37,14 +36,14 @@ const getData = (req, res, alarmclockReq, cb) => {
 };
 
 const updateAlarm = (req, res, alarmclockReq, cb) => {
-  const query = 'update alarmtime set hour=?, minute=?, tod=?'; // TODO: Refact DB to accept TOD.
+  const query = 'update alarmtime set hour=?, minute=?, tod=?';
   // ALARMCLOCK
   if (alarmclockReq) {
-    const { data } = alarmclockReq;
-    model.updateAlarm(query, data, (err, result) => {
+    const { hour, minute, tod } = alarmclockReq.data;
+    model.updateAlarm(query, [hour, minute, tod], (err, result) => {
       if (err) {
         console.log('Error updating time from db:', err);
-        cb(err); // FIX ME put rebound data
+        cb(err);
       } else {
         cb(result);
       }
@@ -52,8 +51,9 @@ const updateAlarm = (req, res, alarmclockReq, cb) => {
   } else {
     // PIROUTINE.COM
     console.log(req.body);
-    const data = [Number(req.body.hour), Number(req.body.minute), req.body.tod];
-    model.updateAlarm(query, data, (err, result) => {
+    const { hour, minute, tod } = adjustInputTime(req.body);
+    console.log('hour, min, tod:', hour, minute, tod);
+    model.updateAlarm(query, [hour, minute, tod], (err, result) => {
       if (err) {
         console.log('Error updating time from db:', err);
         res.sendStatus(500);
@@ -70,7 +70,6 @@ const updateDisarmStatus = (req, res, alarmclockReq, cb) => {
   // ALARMCLOCK
   if (alarmclockReq) {
     const { data } = alarmclockReq;
-    // console.log(model);
     model.updateDisarmStatus(query, [data], (err, result) => {
       if (err) {
         console.log('Error updating isdisarmed from db:', err);
@@ -111,8 +110,8 @@ const updateStreak = (req, res, alarmclockReq, cb) => {
     });
   } else {
     // PIROUTINE.COM
-    const data = req.body.data === true ? 1 : 0;
-    // console.log(data);
+    const { data } = req.body;
+    console.log(data);
     model.updateStreak(query, [data], (err, result) => {
       // console.log('req', req.body, cb);
       if (err) {

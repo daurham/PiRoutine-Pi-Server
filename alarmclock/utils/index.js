@@ -8,8 +8,13 @@ const parseTimeData = (timeObj) => {
 };
 
 const theCurrentTime = () => new Date().toLocaleTimeString();
-const addMinutes = (date, minutes) => new Date(date.getTime() + minutes * 60000);
-const addSeconds = (date, seconds) => new Date(date.getTime() + seconds * 1000);
+
+const addMinutes = (dTimeStamp, minutes) => new Date(
+  dTimeStamp.getTime() + Number(minutes) * 60000,
+);
+const addSeconds = (dTimeStamp, seconds) => new Date(
+  dTimeStamp.getTime() + Number(seconds) * 1000,
+);
 const today = new Date();
 
 const getFirstAlarm = (hour, minute) => new Date(
@@ -21,7 +26,9 @@ const getFirstAlarm = (hour, minute) => new Date(
   0,
 );
 
-const getSecondAlarm = (alarm1) => addMinutes(alarm1, 7); // Adds 7 min to initial alarm
+// Adds 7 min to initial alarm
+// const getSecondAlarm = (alarm1TimeStamp, minDelay = 7) => addMinutes(alarm1TimeStamp, minDelay);
+const getSecondAlarm = (alarm1TimeStamp, minDelay = 7) => addMinutes(alarm1TimeStamp, minDelay);
 
 const swapBinaryAndBool = (val) => {
   if (val === true) return 1;

@@ -17,3 +17,5 @@ io.on('connection', (socket) => {
 
 http.listen(PORT, () => console.log(`listening to *:${PORT}`));
 require('./listeners')(app, express);
+
+module.exports = { io };

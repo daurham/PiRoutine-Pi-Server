@@ -21,7 +21,7 @@ const socket = io.connect(`http://127.0.0.1:${PORT}`, { reconnect: true });
 // Resources
 let alarmTime1;
 let alarmTime2;
-let tenSecIntoAlarm1;
+let aFewSecIntoAlarm1;
 let isDisarmed;
 let streakCount;
 
@@ -48,8 +48,9 @@ if (
 socket.on('got-alarm-time', (time) => {
   const { hour, minute } = parseTimeData(time);
   alarmTime1 = getFirstAlarm(hour, minute).toLocaleTimeString();
-  alarmTime2 = getSecondAlarm(getFirstAlarm(hour, minute)).toLocaleTimeString();
-  tenSecIntoAlarm1 = addSeconds(getFirstAlarm(hour, minute), 10).toLocaleTimeString();
+  alarmTime2 = getSecondAlarm(getFirstAlarm(hour, minute), 10).toLocaleTimeString();
+  aFewSecIntoAlarm1 = addSeconds(getFirstAlarm(hour, minute), 1).toLocaleTimeString();
+  console.log('afew:', aFewSecIntoAlarm1);
   console.log('alarmTime obtained:', alarmTime1);
 });
 socket.on('got-disarm-status', (status) => {
@@ -84,6 +85,6 @@ module.exports = {
   getAlarmData: () => ({
     alarmTime1,
     alarmTime2,
-    tenSecIntoAlarm1,
+    aFewSecIntoAlarm1,
   }),
 };

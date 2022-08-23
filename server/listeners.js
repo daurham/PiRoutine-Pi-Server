@@ -1,4 +1,3 @@
-const axios = require('axios');
 const io = require('./socket/index').getIO();
 const clients = require('./socket/Clients');
 const {
@@ -24,8 +23,6 @@ module.exports = (app, express) => {
     socket.on('disconnect', () => {
       console.log(`${socket.id.cut()} has disconnected`);
       clients.remove(socket.id.cut());
-      // console.log('Clients remaining: ', clients.List);
-      // console.log('_');
     });
 
     // ALARM TIME
@@ -44,7 +41,6 @@ module.exports = (app, express) => {
         // UPDATE CLIENT
         try {
           io.emit('updated-alarm-time', updatedAlarmTime);
-          await axios.get('https://piroutine.com/get-alarrm-update');
         } catch (err) {
           console.log('Error notifying client to update alarm', err);
         }
@@ -73,7 +69,7 @@ module.exports = (app, express) => {
         // UPDATE CLIENT
         try {
           io.emit('updated-disarm-status', updatedStatus);
-          await axios.get('https://piroutine.com/get-disarm-update');
+          // await axios.get('https://piroutine.com/get-disarm-update');
         } catch (err) {
           console.log('Error notifying client to update disarm', err);
         }
@@ -101,7 +97,7 @@ module.exports = (app, express) => {
         // UPDATE CLIENT
         try {
           io.emit('updated-streak-count', updatedStreakCount);
-          await axios.get('https://piroutine.com/get-streak-update');
+          // await axios.get('https://piroutine.com/get-streak-update');
         } catch (err) {
           console.log('Error notifying client to update streak', err);
         }
