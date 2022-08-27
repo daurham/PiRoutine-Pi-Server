@@ -5,6 +5,7 @@ const {
   updateAlarm,
   updateDisarmStatus,
   updateStreak,
+  postData,
 } = require('./controller');
 
 module.exports = (app, express) => {
@@ -108,5 +109,12 @@ module.exports = (app, express) => {
         io.emit('updated-streak-count', updatedStreakCount);
       });
     });
+
+    // USER INFO
+    app.get('/get-user-info/', (req, res) => getData(req, res));
+    app.get('/get-soaked-count/', (req, res) => getData(req, res));
+    app.get('/get-skipped-count/', (req, res) => getData(req, res));
+    app.get('/get-disarm-records/', (req, res) => getData(req, res));
+    app.post('/post-disarm-record', (req, res) => postData(req, res));
   });
 };

@@ -21,15 +21,25 @@ const getData = (req, res, alarmclockReq, cb) => {
     });
   } else {
     // PIROUTINE.COM
-    const { table } = req.query; // will be alarmtime, streakcount or isdisarmed
+    const { table } = req.query; // will be alarmtime, streakcount or isdisarmed,
     query = `select * from ${table}`;
+    if (table === 'users') query = `select * from ${table} where username = 'daurham'`;
+    // console.log(query);
     model.getData(query, (err, result) => {
       if (err) { // client handling
-        console.log('Error getting data from db:', err);
-        res.sendStatus(500);
+        console.error('Error getting data from: ', table, err);
+        if (res === 'local') {
+          cb(err);
+        } else {
+          res.sendStatus(500);
+        }
       } else {
-        // console.log(result);
-        res.status(200).send(result);
+        console.log('got data from: ', table);
+        if (res === 'local') {
+          cb(result);
+        } else {
+          res.status(200).send(result);
+        }
       }
     });
   }
@@ -96,33 +106,81 @@ const updateDisarmStatus = (req, res, alarmclockReq, cb) => {
 
 const updateStreak = (req, res, alarmclockReq, cb) => {
   // ALARMCLOCK
-  const query = 'update streakcount set streak=?';
+  let query = 'update streakcount set streak=?';
   if (alarmclockReq) {
     const { data } = alarmclockReq;
     // console.log('going int streak db:', data);
     model.updateStreak(query, data, (err, result) => {
       if (err) {
         console.log('Error updating streak from db:', err);
-        cb(err); // FIX ME put rebound data
+        cb(null, err); // FIX ME put rebound data
       } else {
         cb(result);
       }
     });
   } else {
     // PIROUTINE.COM
-    const { data } = req.body;
-    console.log(data);
-    model.updateStreak(query, [data], (err, result) => {
-      // console.log('req', req.body, cb);
+
+    getData({ query: 'streakcount' }, 'local', null, (err, result) => {
       if (err) {
-        console.log('Error updating streak from db:', err);
-        res.sendStatus(500);
+        console.log('err in getting streak count', err);
       } else {
-        cb(result);
-        res.status(203).send(result);
+        // [ { id:1, streak: 5, maxstreak: 0 } ] = result;
+        const { maxstreak } = result[0];
+        const streak = req.body.data;
+        if (maxstreak < streak) {
+          query = 'INSERT INTO streakcount (id, streak, maxstreak) values (1, ?, ?)';
+          const data = [1, streak, streak];
+          console.log('updating streak & maxstreak:', streak, maxstreak);
+          model.updateStreak(query, data, (err2, result2) => {
+            if (err2) {
+              console.log('Error updating streak from db:', err2);
+              res.sendStatus(500);
+            } else {
+              cb(result2);
+              res.status(203).send(result2);
+            }
+          });
+          // ELSE MAX STREAK ISNT LESS THAN STREAK
+        } else {
+          console.log('updating streak only. streak & max:', streak, maxstreak);
+          model.updateStreak(query, [streak], (err3, result3) => {
+            if (err3) {
+              console.log('Error updating streak from db:', err3);
+              res.sendStatus(500);
+            } else {
+              cb(result3);
+              res.status(203).send(result3);
+            }
+          });
+        }
       }
     });
   }
+};
+
+const postData = (req, res) => {
+  const {
+    date_,
+    alarm1,
+    alarm2,
+    disarmedtime1,
+    disarmedtime2,
+    success,
+    username,
+  } = req.body;
+  const data = [date_, alarm1, alarm2, disarmedtime1, disarmedtime2, success, username];
+  console.log('posting data: ', data);
+  const query = 'INSERT INTO disarmrecords (date_, alarm1, alarm2, disarmedtime1, disarmedtime2, success, username) VALUES (?, ?, ?, ?, ?, ?, ?)';
+  model.postDisarmRecord(query, data, (err, result) => {
+    if (err) {
+      console.error('Error posting disarmRecord into db: ', err);
+      res.status(500).send(err);
+    } else {
+      console.log('POSTED!', result);
+      res.sendStatus(201);
+    }
+  });
 };
 
 // TESTING
@@ -136,6 +194,7 @@ module.exports = {
   updateAlarm,
   updateStreak,
   updateDisarmStatus,
+  postData,
   distanceMet,
   notifyErr,
 };
