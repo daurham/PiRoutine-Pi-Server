@@ -16,4 +16,4 @@
  *                   }
  * }
  */
-require('./Clock').Clock({});
+require('./Clock').Clock({ noPump: true });

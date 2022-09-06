@@ -47,12 +47,12 @@
  */
 
 // Server Imports
-const { io } = require('../server');
+/* const { io } = require('../server'); */
 
 // Client Imports:
 const {
   theCurrentTime,
-  getFirstAlarm,
+  makeTime,
   addSeconds,
 } = require('../alarmclock/utils');
 const {
@@ -63,12 +63,13 @@ const { button, yellowLED } = require('../alarmclock/gpio/modules');
 
 // DUMMY DATA:
 // Set alarmOne to be 1 min from now
-const alarmOneTStamp = getFirstAlarm(new Date().getHours(), new Date().getMinutes() + 1);
+const alarmOneTStamp = makeTime(new Date().getHours(), new Date().getMinutes() + 1);
 const alarmOne = alarmOneTStamp.toLocaleTimeString();
 // Set alarmTwo to be 10 sec after alarmOne
 const alarmTwoTStamp = addSeconds(alarmOneTStamp, 10);
 const alarmTwo = alarmTwoTStamp.toLocaleTimeString();
 const fewSecIntoAlarmOne = addSeconds(alarmOneTStamp, 30).toLocaleDateString();
+const fewSecIntoAlarmTwo = addSeconds(alarmTwoTStamp, 30).toLocaleDateString();
 
 const breakOutTime = addSeconds(alarmOneTStamp, 15).toLocaleTimeString();
 
@@ -82,15 +83,22 @@ const callback = () => {
 /* ///////////////////////////////////////////////////////////////////// */
 
 // Init Server
+/*
 io.on('connection', (serverSocket) => {
   serverSocket.on('ended', (val) => {
     console.log('response val:', val);
   });
 });
+ */
 
 // Init Client / Options
 Clock({
-  isTest: { alarmOne, alarmTwo, fewSecIntoAlarmOne },
+  isTest: {
+    alarmOne,
+    alarmTwo,
+    fewSecIntoAlarmOne,
+    fewSecIntoAlarmTwo,
+  },
   reasonToStop: () => {
     console.log('curTime:', theCurrentTime(), 'breakout @:', breakOutTime);
     socket().emit('ended', 'test');
@@ -106,7 +114,7 @@ Clock({
 
 const {
   theCurrentTime,
-  getFirstAlarm,
+  makeTime,
   addSeconds,
 } = require('../alarmclock/utils');
   // parseTimeData,
@@ -131,7 +139,7 @@ const { io } = require('../server');
 // let clientSocket;
 
 // Set alarmOne to be 1 min from now
-const alarmOneTStamp = getFirstAlarm(new Date().getHours(), new Date().getMinutes() + 1);
+const alarmOneTStamp = makeTime(new Date().getHours(), new Date().getMinutes() + 1);
 const alarmOne = alarmOneTStamp.toLocaleTimeString();
 // Set alarmTwo to be 10 sec after alarmOne
 const alarmTwoTStamp = addSeconds(alarmOneTStamp, 10);

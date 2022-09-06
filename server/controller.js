@@ -159,7 +159,7 @@ const updateStreak = (req, res, alarmclockReq, cb) => {
   }
 };
 
-const postData = (req, res) => {
+const postData = (disarmRecord, cb) => {
   const {
     date_,
     alarm1,
@@ -168,17 +168,16 @@ const postData = (req, res) => {
     disarmedtime2,
     success,
     username,
-  } = req.body;
+  } = disarmRecord;
   const data = [date_, alarm1, alarm2, disarmedtime1, disarmedtime2, success, username];
   console.log('posting data: ', data);
   const query = 'INSERT INTO disarmrecords (date_, alarm1, alarm2, disarmedtime1, disarmedtime2, success, username) VALUES (?, ?, ?, ?, ?, ?, ?)';
   model.postDisarmRecord(query, data, (err, result) => {
     if (err) {
       console.error('Error posting disarmRecord into db: ', err);
-      res.status(500).send(err);
+      cb(500, err);
     } else {
-      console.log('POSTED!', result);
-      res.sendStatus(201);
+      cb(201, result);
     }
   });
 };

@@ -115,6 +115,11 @@ module.exports = (app, express) => {
     app.get('/get-soaked-count/', (req, res) => getData(req, res));
     app.get('/get-skipped-count/', (req, res) => getData(req, res));
     app.get('/get-disarm-records/', (req, res) => getData(req, res));
-    app.post('/post-disarm-record', (req, res) => postData(req, res));
+    // app.post('/post-disarm-record', (req, res) => postData(req, res)); // no need
+    socket.on('post-disarm-record', (disarmRecord) => {
+      postData(disarmRecord, (statusCode, response) => {
+        console.log('post:', statusCode, response);
+      });
+    });
   });
 };

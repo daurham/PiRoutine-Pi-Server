@@ -9,7 +9,7 @@ const { onClick } = require('./gpio');
 const {
   theCurrentTime,
   parseTimeData,
-  getFirstAlarm,
+  makeTime,
   getSecondAlarm,
   addSeconds,
   swapBinaryAndBool,
@@ -22,6 +22,7 @@ const socket = io.connect(`http://127.0.0.1:${PORT}`, { reconnect: true });
 let alarmTime1;
 let alarmTime2;
 let aFewSecIntoAlarm1;
+let aFewSecIntoAlarm2;
 let isDisarmed;
 let streakCount;
 
@@ -47,15 +48,18 @@ if (
 
 socket.on('got-alarm-time', (time) => {
   const { hour, minute } = parseTimeData(time);
-  alarmTime1 = getFirstAlarm(hour, minute).toLocaleTimeString();
-  alarmTime2 = getSecondAlarm(getFirstAlarm(hour, minute), 10).toLocaleTimeString();
-  aFewSecIntoAlarm1 = addSeconds(getFirstAlarm(hour, minute), 1).toLocaleTimeString();
-  console.log('afew:', aFewSecIntoAlarm1);
-  console.log('alarmTime obtained:', alarmTime1);
+  alarmTime1 = makeTime(hour, minute).toLocaleTimeString();
+  alarmTime2 = getSecondAlarm(makeTime(hour, minute), 7).toLocaleTimeString();
+  aFewSecIntoAlarm1 = addSeconds(makeTime(hour, minute), 3).toLocaleTimeString();
+  aFewSecIntoAlarm2 = addSeconds(getSecondAlarm(makeTime(hour, minute), 7), 3).toLocaleTimeString();
+  console.log('alarmTime1 obtained:', alarmTime1);
+  console.log('alarmTime2 obtained:', alarmTime2);
+  console.log('afew1:', aFewSecIntoAlarm1);
+  console.log('afew2:', aFewSecIntoAlarm2);
 });
 socket.on('got-disarm-status', (status) => {
   console.log('disarm status obtained:', status);
-  isDisarmed = swapBinaryAndBool(status[0].disarmedstatus); // turns too Boolean
+  isDisarmed = swapBinaryAndBool(status[0].disarmedstatus); // turns to Boolean
   console.log('disarm status obtained:', isDisarmed);
 });
 socket.on('got-streak-count', (count) => {
@@ -86,5 +90,6 @@ module.exports = {
     alarmTime1,
     alarmTime2,
     aFewSecIntoAlarm1,
+    aFewSecIntoAlarm2,
   }),
 };
