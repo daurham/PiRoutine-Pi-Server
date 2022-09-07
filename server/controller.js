@@ -6,11 +6,11 @@ const notifyErr = (req, res) => {
   res.sendStatus(201);
 };
 
-const getData = (req, res, alarmclockReq, cb) => {
+const getData = (req, res, options, cb) => {
   let query;
-  if (alarmclockReq) {
+  if (options.alarmclock) {
     console.log('get in alarmclock');
-    const { table } = alarmclockReq;
+    const { table } = options;
     query = `select * from ${table}`; // alarmtime, streakcount, isdisarmed
     model.getData(query, (err, result) => {
       if (err) {
@@ -27,7 +27,7 @@ const getData = (req, res, alarmclockReq, cb) => {
     // console.log(query);
     model.getData(query, (err, result) => {
       if (err) { // client handling
-        console.error('Error getting data from: ', table, err);
+        console.error(`Error getting data from ${table}`, err);
         if (res === 'local') {
           cb(err);
         } else {
@@ -38,6 +38,7 @@ const getData = (req, res, alarmclockReq, cb) => {
         if (res === 'local') {
           cb(result);
         } else {
+          console.log(table, ' data: ', result);
           res.status(200).send(result);
         }
       }
@@ -45,12 +46,51 @@ const getData = (req, res, alarmclockReq, cb) => {
   }
 };
 
-const updateAlarm = (req, res, alarmclockReq, cb) => {
+// DYNAMIC UPDATEDATA FUNCTION UNDER CONSTRUCTION:
+const updateData = (req, res, options, cb) => {
+  let query; // = 'update alarmtime set hour=?, minute=?, tod=?';
+  let table;
+  let column;
+  let data;
+  if (options.alarmclock) {
+    if (options.alarmclock) {
+      data = options.data;
+    } else {
+      data = options.data;
+    }
+    if (!options.alarmclock) data = req.body.data;
+    model.updateData(query, data, (err, result) => {
+      if (err) {
+        console.log(`Error updating ${table}.${column} from db:`, err);
+        cb(err);
+      } else {
+        cb(result);
+      }
+    });
+  } else {
+    // PIROUTINE.COM
+    console.log('Recieving data: ', req.body); // { data: [] }
+    let { data } = req.body;
+    if (table === 'alarmtime') data = adjustInputTime(data);
+    console.log('Data from req.body: ', data);
+    model.updateData(query, data, (err, result) => {
+      if (err) {
+        console.log('Error updating time from db:', err);
+        res.sendStatus(500);
+      } else {
+        cb(result);
+        res.status(203).send(result);
+      }
+    });
+  }
+};
+
+const updateAlarm = (req, res, options, cb) => {
   const query = 'update alarmtime set hour=?, minute=?, tod=?';
   // ALARMCLOCK
-  if (alarmclockReq) {
-    const { hour, minute, tod } = alarmclockReq.data;
-    model.updateAlarm(query, [hour, minute, tod], (err, result) => {
+  if (options.alarmclock) {
+    const { hour, minute, tod } = options.data;
+    model.updateData(query, [hour, minute, tod], (err, result) => {
       if (err) {
         console.log('Error updating time from db:', err);
         cb(err);
@@ -63,7 +103,7 @@ const updateAlarm = (req, res, alarmclockReq, cb) => {
     console.log(req.body);
     const { hour, minute, tod } = adjustInputTime(req.body);
     console.log('hour, min, tod:', hour, minute, tod);
-    model.updateAlarm(query, [hour, minute, tod], (err, result) => {
+    model.updateData(query, [hour, minute, tod], (err, result) => {
       if (err) {
         console.log('Error updating time from db:', err);
         res.sendStatus(500);
@@ -75,12 +115,12 @@ const updateAlarm = (req, res, alarmclockReq, cb) => {
   }
 };
 
-const updateDisarmStatus = (req, res, alarmclockReq, cb) => {
+const updateDisarmStatus = (req, res, options, cb) => {
   const query = 'update isdisarmed set disarmedstatus=?';
   // ALARMCLOCK
-  if (alarmclockReq) {
-    const { data } = alarmclockReq;
-    model.updateDisarmStatus(query, [data], (err, result) => {
+  if (options.alarmclock) {
+    const { data } = options;
+    model.updateData(query, [data], (err, result) => {
       if (err) {
         console.log('Error updating isdisarmed from db:', err);
         cb(err);
@@ -92,7 +132,7 @@ const updateDisarmStatus = (req, res, alarmclockReq, cb) => {
     // PIROUTINE.COM
     const { data } = req.body;
     console.log('going int disarm db:', data);
-    model.updateDisarmStatus(query, [data], (err, result) => {
+    model.updateData(query, [data], (err, result) => {
       if (err) {
         console.log('Error updating isdisarmed from db:', err);
         res.sendStatus(500);
@@ -104,13 +144,13 @@ const updateDisarmStatus = (req, res, alarmclockReq, cb) => {
   }
 };
 
-const updateStreak = (req, res, alarmclockReq, cb) => {
+const updateStreak = (req, res, options, cb) => {
   // ALARMCLOCK
   let query = 'update streakcount set streak=?';
-  if (alarmclockReq) {
-    const { data } = alarmclockReq;
+  if (options.alarmclock) {
+    const { data } = options;
     // console.log('going int streak db:', data);
-    model.updateStreak(query, data, (err, result) => {
+    model.updateData(query, data, (err, result) => {
       if (err) {
         console.log('Error updating streak from db:', err);
         cb(null, err); // FIX ME put rebound data
@@ -132,7 +172,7 @@ const updateStreak = (req, res, alarmclockReq, cb) => {
           query = 'INSERT INTO streakcount (id, streak, maxstreak) values (1, ?, ?)';
           const data = [1, streak, streak];
           console.log('updating streak & maxstreak:', streak, maxstreak);
-          model.updateStreak(query, data, (err2, result2) => {
+          model.updateData(query, data, (err2, result2) => {
             if (err2) {
               console.log('Error updating streak from db:', err2);
               res.sendStatus(500);
@@ -144,7 +184,7 @@ const updateStreak = (req, res, alarmclockReq, cb) => {
           // ELSE MAX STREAK ISNT LESS THAN STREAK
         } else {
           console.log('updating streak only. streak & max:', streak, maxstreak);
-          model.updateStreak(query, [streak], (err3, result3) => {
+          model.updateData(query, [streak], (err3, result3) => {
             if (err3) {
               console.log('Error updating streak from db:', err3);
               res.sendStatus(500);
@@ -157,6 +197,81 @@ const updateStreak = (req, res, alarmclockReq, cb) => {
       }
     });
   }
+};
+
+const updateSkippedCount = (req, res, options, cb) => {
+  const query = 'update skippedcount set skipped=?';
+  // ALARMCLOCK
+  if (options.alarmclock) {
+    const { data } = options;
+    model.updateData(query, [data], (err, result) => {
+      if (err) {
+        console.log('Error updating isdisarmed from db:', err);
+        cb(err);
+      } else {
+        cb(result);
+      }
+    });
+  } else {
+    // PIROUTINE.COM
+    const { data } = req.body;
+    console.log('going int disarm db:', data);
+    model.updateData(query, [data], (err, result) => {
+      if (err) {
+        console.log('Error updating isdisarmed from db:', err);
+        res.sendStatus(500);
+      } else {
+        cb(result);
+        res.status(203).send(result);
+      }
+    });
+  }
+};
+
+const updateSoakedCount = (req, res, options, cb) => {
+  const query = 'update soakedcount set soaked=?';
+  // ALARMCLOCK
+  if (options.alarmclock) {
+    const { data } = options;
+    model.updateData(query, [data], (err, result) => {
+      if (err) {
+        console.log('Error updating soakedcount from db:', err);
+        cb(err);
+      } else {
+        cb(result);
+      }
+    });
+  } else {
+    // PIROUTINE.COM
+    const { data } = req.body;
+    console.log('going into soakedcount db:', data);
+    model.updateData(query, [data], (err, result) => {
+      if (err) {
+        console.log('Error updating soakedcount from db:', err);
+        res.sendStatus(500);
+      } else {
+        cb(result);
+        res.status(203).send(result);
+      }
+    });
+  }
+};
+
+const updateSkippedDate = (req, res, options, cb) => {
+  const query = 'update skippedcount set skipdate=?';
+  // PIROUTINE.COM
+  const { data } = req.body; // { date: 'mm/dd/yyyy' }
+  console.log('req.body:', req.body);
+  console.log('going into skippedcount.skipdate db:', data);
+  model.updateData(query, [data], (err, result) => {
+    if (err) {
+      console.log('Error updating isdisarmed from db:', err);
+      res.sendStatus(500);
+    } else {
+      cb(result);
+      res.status(203).send(result);
+    }
+  });
 };
 
 const postData = (disarmRecord, cb) => {
@@ -193,6 +308,9 @@ module.exports = {
   updateAlarm,
   updateStreak,
   updateDisarmStatus,
+  updateSkippedCount,
+  updateSkippedDate,
+  updateSoakedCount,
   postData,
   distanceMet,
   notifyErr,

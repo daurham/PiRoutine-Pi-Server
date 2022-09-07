@@ -33,7 +33,8 @@ CREATE TABLE soakedcount(
 DROP TABLE IF EXISTS skippedcount;
 CREATE TABLE skippedcount(
   id INT auto_increment PRIMARY KEY,
-  skipped INT
+  skipped INT,
+  skipdate VARCHAR(20)
 );
 
 DROP TABLE IF EXISTS users;
@@ -63,10 +64,10 @@ INSERT INTO alarmtime (hour, minute, tod) VALUES (6, 5, 'AM');
 INSERT INTO streakcount (streak, maxstreak) VALUES (0, 0);
 INSERT INTO isdisarmed (disarmedstatus) VALUES (0); -- 0 = false, 1 = true
 INSERT INTO users (username, password_) VALUES ('testuser', '1234');
-INSERT INTO users (username, password_) VALUES ('daurham', 'lol');
+INSERT INTO users (username, password_) VALUES ('daurham', '1234');
 INSERT INTO soakedcount (soaked) VALUES (0);
 INSERT INTO skippedcount (skipped) VALUES (0);
-INSERT INTO disarmrecords (date_, alarm1, alarm2, disarmedtime1, disarmedtime2, success, username) VALUES ('8/19/2022', '5:10:00 AM', '5:17:00 AM', '5:05:00 AM', '5:15:00 AM', 1, 'daurham');
+INSERT INTO disarmrecords (date_, alarm1, alarm2, disarmedtime1, disarmedtime2, success, username) VALUES ('8/20/2022', '5:10:00 AM', '5:17:00 AM', '5:05:00 AM', '5:15:00 AM', 1, 'daurham');
 
 -- INSERT INTO alarmtime (hour, minute) VALUES (6, 5);
 -- INSERT INTO alarmtime (hour, minute) VALUES (10, 5);

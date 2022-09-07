@@ -3,3 +3,7 @@ Create tests
 ReInstall redLED
 Check to ensure that "Time"s don't expire
 Finish README
+
+1. Finish update skip / soak socket.on FN in listener.js to increment data.
+2. Create a function that can turn `new Date().toLocaleDateString()` to the date of the following day & use that in
+3. refactor db naming conventions. Rather "streakcount, skippedcount, soakedcount", go for streak_data, skip_data, days_skipped, etc. & maybe rethink the use of "soaked"?

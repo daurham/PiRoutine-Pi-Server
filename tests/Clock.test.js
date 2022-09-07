@@ -68,8 +68,8 @@ const alarmOne = alarmOneTStamp.toLocaleTimeString();
 // Set alarmTwo to be 10 sec after alarmOne
 const alarmTwoTStamp = addSeconds(alarmOneTStamp, 10);
 const alarmTwo = alarmTwoTStamp.toLocaleTimeString();
-const fewSecIntoAlarmOne = addSeconds(alarmOneTStamp, 30).toLocaleDateString();
-const fewSecIntoAlarmTwo = addSeconds(alarmTwoTStamp, 30).toLocaleDateString();
+const fewSecIntoAlarmOne = addSeconds(alarmOneTStamp, 3).toLocaleTimeString();
+const fewSecIntoAlarmTwo = addSeconds(alarmTwoTStamp, 3).toLocaleTimeString();
 
 const breakOutTime = addSeconds(alarmOneTStamp, 15).toLocaleTimeString();
 
