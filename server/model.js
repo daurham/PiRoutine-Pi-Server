@@ -26,9 +26,9 @@ const updateData = (q, d, cb) => { // Can reuse this 1 function & delete rest
 //   db.query(q, d, cb);
 // };
 
-// const postDisarmRecord = (q, d, cb) => {
-//   db.query(q, d, cb);
-// };
+const postDisarmRecord = (q, d, cb) => {
+  db.query(q, d, cb);
+};
 
 module.exports = {
   getData,
@@ -39,5 +39,5 @@ module.exports = {
   // updateSkippedCount,
   // updateSkippedDate,
   // updateSoakedCount,
-  // postDisarmRecord,
+  postDisarmRecord,
 };

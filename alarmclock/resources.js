@@ -47,8 +47,8 @@ if (
   socket.emit('get-alarm-time');
   socket.emit('get-disarm-status');
   socket.emit('get-streak-count');
-  // socket.emit('get-skipped-count');
-  // socket.emit('get-soaked-count');
+  socket.emit('get-skipped-data');
+  socket.emit('get-soaked-count');
 }
 
 socket.on('got-alarm-time', (time) => {
