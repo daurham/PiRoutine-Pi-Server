@@ -1,4 +1,5 @@
 const requireSocket = require('socket.io');
+const EVENTS = require('./socketEvents');
 
 let io;
 
@@ -13,4 +14,5 @@ module.exports = {
     }
     return io;
   },
+  EVENTS,
 };

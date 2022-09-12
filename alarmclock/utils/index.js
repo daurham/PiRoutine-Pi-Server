@@ -3,6 +3,9 @@
  *
  */
 
+const EVENTS = require('./socketEvents');
+const { checkTestLogs } = require('./ClockTestLogs');
+
 const parseTimeData = (timeObj) => {
   const { hour, minute } = timeObj[0];
   return { hour, minute };
@@ -16,16 +19,6 @@ const addMinutes = (dTimeStamp, minutes) => new Date(
 const addSeconds = (dTimeStamp, seconds) => new Date(
   dTimeStamp.getTime() + Number(seconds) * 1000,
 );
-// const today = new Date();
-
-// const getFirstAlarm = (hour, minute) => new Date(
-//   today.getFullYear(),
-//   today.getMonth(),
-//   today.getDate(),
-//   hour,
-//   minute,
-//   0,
-// );
 
 // Adds 7 min to initial alarm
 // const getSecondAlarm = (alarm1TimeStamp, minDelay = 7) => addMinutes(alarm1TimeStamp, minDelay);
@@ -102,4 +95,6 @@ module.exports = {
   getPhase,
   getHour,
   getMinute,
+  checkTestLogs,
+  EVENTS,
 };

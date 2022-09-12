@@ -13,6 +13,7 @@ const {
   getSecondAlarm,
   addSeconds,
   swapBinaryAndBool,
+  EVENTS,
 } = require('./utils');
 
 const { PORT } = env;
@@ -44,66 +45,61 @@ if (
   || isDisarmed === undefined
   || streakCount === undefined
 ) {
-  socket.emit('get-alarm-time');
-  socket.emit('get-disarm-status');
-  socket.emit('get-streak-count');
-  socket.emit('get-skipped-data');
-  socket.emit('get-soaked-count');
+  socket.emit(EVENTS.GET_ALARM_TIME);
+  socket.emit(EVENTS.GET_DISARM_STATUS);
+  socket.emit(EVENTS.GET_STREAK_DATA);
+  socket.emit(EVENTS.GET_SKIPPED_DATA);
+  socket.emit(EVENTS.GET_SOAKED_COUNT);
 }
 
-socket.on('got-alarm-time', (time) => {
+socket.on(EVENTS.GOT_ALARM_TIME, (time) => {
   const { hour, minute } = parseTimeData(time);
   alarmTime1 = makeTime(hour, minute).toLocaleTimeString();
   alarmTime2 = getSecondAlarm(makeTime(hour, minute), 7).toLocaleTimeString();
   aFewSecIntoAlarm1 = addSeconds(makeTime(hour, minute), 3).toLocaleTimeString();
   aFewSecIntoAlarm2 = addSeconds(getSecondAlarm(makeTime(hour, minute), 7), 3).toLocaleTimeString();
-  console.log('alarmTime1 set to:', alarmTime1);
-  console.log('alarmTime2 set to:', alarmTime2);
-  console.log('afew1 set to:', aFewSecIntoAlarm1);
-  console.log('afew2 set to:', aFewSecIntoAlarm2);
+  // console.log('alarmTime1 set to:', alarmTime1);
+  // console.log('alarmTime2 set to:', alarmTime2);
+  // console.log('afew1 set to:', aFewSecIntoAlarm1);
+  // console.log('afew2 set to:', aFewSecIntoAlarm2);
 });
-socket.on('got-disarm-status', (status) => { // [ { id: 1, disarmedstatus: 1 } ]
+socket.on(EVENTS.GOT_DISARM_STATUS, (status) => { // [ { id: 1, disarmedstatus: 1 } ]
   isDisarmed = swapBinaryAndBool(status[0].disarmedstatus); // turns to Boolean
   console.log('disarm status set to:', isDisarmed);
 });
-socket.on('got-streak-count', (count) => {
+socket.on(EVENTS.GOT_STREAK_DATA, (count) => {
   streakCount = count[0].streak;
   console.log('streak set to:', streakCount);
 });
-socket.on('got-skipped-data', (data) => {
+socket.on(EVENTS.GOT_SKIPPED_DATA, (data) => {
   skippedCount = data[0].skipped;
   skipDate = data[0].skipdate;
   console.log('skipped set to:', skippedCount);
   console.log('skipDate set to:', skipDate);
 });
-socket.on('got-soaked-count', (count) => {
+socket.on(EVENTS.GOT_SOAKED_COUNT, (count) => {
   soakedCount = count[0].soaked;
   console.log('soaked set to:', soakedCount);
 });
 
 // Socket UPDATE
-socket.on('updated-alarm-time', () => {
-  socket.emit('get-alarm-time');
+socket.on(EVENTS.UPDATED_ALARM_TIME, () => {
+  socket.emit(EVENTS.GET_ALARM_TIME);
   console.log('updated alarm, from:', alarmTime1);
 });
-socket.on('updated-disarm-status', () => {
-  socket.emit('get-disarm-status');
+socket.on(EVENTS.UPDATED_DISARM_STATUS, () => {
+  socket.emit(EVENTS.GET_DISARM_STATUS);
   console.log('updated disarm status, from:', isDisarmed);
 });
-socket.on('updated-streak-count', () => {
-  socket.emit('get-streak-count');
+socket.on(EVENTS.UPDATED_STREAK_DATA, () => {
+  socket.emit(EVENTS.GET_STREAK_DATA);
   console.log('updated streak, from:', streakCount);
 });
-socket.on('updated-skipped-count', () => {
-  socket.emit('get-skipped-data');
-  console.log('updated skipped, from:', skippedCount);
+socket.on(EVENTS.UPDATED_SKIPPED_DATA, () => {
+  socket.emit(EVENTS.GET_SKIPPED_DATA);
 });
-socket.on('updated-skipped-date', () => {
-  socket.emit('get-skipped-data');
-  console.log('updated skipDate, from:', skipDate);
-});
-socket.on('updated-soaked-count', () => {
-  socket.emit('get-soaked-count');
+socket.on(EVENTS.UPDATED_SOAKED_COUNT, () => {
+  socket.emit(EVENTS.GET_SOAKED_COUNT);
   console.log('updated soaked, from:', soakedCount);
 });
 

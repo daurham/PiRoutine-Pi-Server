@@ -2,10 +2,8 @@
  * the goal of this file is to keep track of the data needed to
  *  log the daily disarmRecord data.
  */
-// I need to keep track of:
-// date_, alarm1, alarm2, disarmedtime1, disarmedtime2, success, username
-// And I need to post this data in the beginning of phase 3.
-//  I need to import this files functionality into alarmClock & update data, send it off later.
+
+const EVENTS = require('./socketEvents');
 
 let alarm1;
 let alarm2;
@@ -32,7 +30,7 @@ const postDisarmRecord = (gotSocket) => {
     username,
   };
   console.log('Posting data @ : ', new Date().toLocaleTimeString(), data);
-  gotSocket().emit('post-disarm-record', data);
+  gotSocket().emit(EVENTS.POST_DISARM_RECORDS, data);
 };
 
 module.exports = {

@@ -2,6 +2,7 @@ const model = require('./model');
 const { setQuery, setData } = require('./utils');
 
 const getData = (req, res, opts, cb) => {
+  console.log('Im here');
   const { table, alarmclock } = opts;
   const query = setQuery(table, null, 'GET');
   model.getData(query, (err, result) => {

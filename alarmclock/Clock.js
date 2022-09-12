@@ -8,7 +8,12 @@
  */
 
 const { watchLED, runPump } = require('./gpio');
-const { theCurrentTime, getPhase } = require('./utils');
+const {
+  theCurrentTime,
+  getPhase,
+  checkTestLogs,
+  EVENTS,
+} = require('./utils');
 const {
   getAlarmData,
   getDisarmStatus,
@@ -23,7 +28,7 @@ const {
   setAlarm2,
   setSuccess,
   setUsername,
-} = require('./logDisarmRecords');
+} = require('./utils/logDisarmRecords');
 
 // Resouces - Readability
 let currentPhase = 1;
@@ -41,22 +46,22 @@ const skipThisDate = () => getAlarmData().skipDate;
 
 // Update Resources
 const resetStreak = () => {
-  socket().emit('update-streak-count', 0);
+  socket().emit(EVENTS.UPDATE_STREAK_DATA, 0);
 };
 const toggleDisarmStatus = () => {
   const status = !(isDisarmed() === true);
   console.log('toggleing to: ', status);
-  socket().emit('update-disarm-status', status);
+  socket().emit(EVENTS.UPDATE_DISARM_STATUS, status);
 };
 const incrementStreak = () => {
-  socket().emit('update-streak-count', streakCount() + 1);
+  socket().emit(EVENTS.UPDATE_STREAK_DATA, streakCount() + 1);
 };
 const incrementDaysSkipped = () => {
   console.log('SKIPPING A DAY');
-  socket().emit('update-skipped-count', skippedCount() + 1);
+  socket().emit(EVENTS.UPDATE_STREAK_DATA, skippedCount() + 1);
 };
 const incrementDaysSoaked = () => {
-  socket().emit('update-soaked-count', soakedCount() + 1);
+  socket().emit(EVENTS.UPDATE_SOAKED_COUNT, soakedCount() + 1);
 };
 
 // Actions
@@ -77,22 +82,14 @@ const runAlarm = (test, alarmNum) => {
   if (alarmNum === 2) setDisarmTime2(null);
   // initiateStreakFailure(); // runs on the red LED for 20hrs
 };
-
-const checkTestLogs = () => {
-  console.log('|>>->_TEST_RUNNING--->>>>>');
-  // console.log(theCurrentTime());
-  console.log('alarmtime1', alarm1());
-  console.log('alarmtime2', alarm2());
-  console.log('fewSecAfterAlarm1Time', aFewSecIntoAlarm1());
-  console.log('fewSecAfterAlarm2Time', aFewSecIntoAlarm2());
-  console.log('isDisarmed', isDisarmed());
-  console.log('streak', streakCount());
-  console.log('skipThisDate', skipThisDate());
-  // console.log('resetStreak', getStreakCount());
-  // console.log('Increment Streak', incrementStreak());
-  // console.log('Run Pump', runPump('test'));
-  // console.log('Run Alarm', runAlarm());
-  console.log('<-<<__TEST_RUNNING---<<<<<|');
+const testingTools = {
+  alarm1,
+  alarm2,
+  aFewSecIntoAlarm1,
+  aFewSecIntoAlarm2,
+  isDisarmed,
+  streakCount,
+  skipThisDate,
 };
 
 /**
@@ -239,7 +236,7 @@ const Clock = ({
       }
     }
 
-    if (isTest) checkTestLogs();
+    if (isTest) checkTestLogs(testingTools);
 
     // Check if need to stop Clock
     if (stoppingClock) {

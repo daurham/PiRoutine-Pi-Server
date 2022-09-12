@@ -7,10 +7,6 @@ class Clients {
   add(id) {
     const max = this.getMax();
     if (this.find(id)) this.remove(id);
-    // const num = `#${max}.`;
-    // const joinedAt = time;
-
-    // this.List[max] = { id, num, joinedAt };
     this.List[max] = { id };
   }
 

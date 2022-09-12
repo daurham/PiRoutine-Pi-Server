@@ -73,5 +73,6 @@ INSERT INTO disarmrecords (date_, alarm1, alarm2, disarmedtime1, disarmedtime2, 
 -- INSERT INTO alarmtime (hour, minute) VALUES (10, 5);
 -- mysql -u daurham -p < PiRoutine-Pi-Server/server/database/schema.sql // uploads this schema from pi root
 -- mysql -u daurham -p < PiRoutine-Pi-Server/server/database/schema.sql
+
 -- rmysql < PiRoutine-Pi-Server/server/database/schema.sql
 -- // uploads this schema from pi root
