@@ -7,6 +7,7 @@ const {
 module.exports = () => {
   io.on('connection', (socket) => {
     socket.on(EVENTS.POST_DISARM_RECORDS, (disarmRecord) => {
+      console.log('Posting disarm data [serverside]: ', disarmRecord);
       postData(disarmRecord);
     });
   });

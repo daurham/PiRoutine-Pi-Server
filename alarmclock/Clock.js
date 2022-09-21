@@ -58,19 +58,23 @@ const incrementStreak = () => {
 };
 const incrementDaysSkipped = () => {
   console.log('SKIPPING A DAY');
-  socket().emit(EVENTS.UPDATE_STREAK_DATA, skippedCount() + 1);
+  socket().emit(EVENTS.UPDATED_SKIPPED_DATA, skippedCount() + 1);
 };
 const incrementDaysSoaked = () => {
   socket().emit(EVENTS.UPDATE_SOAKED_COUNT, soakedCount() + 1);
 };
 
 // Actions
-const bypassAlarm = () => {
-  console.log('______succeeded to disarm');
-  setSuccess(1);
-  toggleDisarmStatus();
-  incrementStreak();
-  setTimeout(() => console.log('after..?', isDisarmed()), 1000);
+const bypassAlarm = (disarmedFormerAlarm, alarmNum) => {
+  console.log('______succeeded to disarm alarm #', alarmNum);
+  if (alarmNum === 1) {
+    setSuccess(1);
+    disarmedFormerAlarm(true);
+  }
+  if (alarmNum === 2 && disarmedFormerAlarm()) {
+    incrementStreak();
+    disarmedFormerAlarm(false); // Reset
+  }
 };
 const runAlarm = (test, alarmNum) => {
   console.log('______failed to disarm');
@@ -97,20 +101,20 @@ const testingTools = {
  * @param {ClockOptions} param
  * interface clockOptions {
   * isTest: Boolean,
-  * noPump: Boolean,
+  * disablePump: Boolean,
   * reasonToStop: Function: Boolean,
   * clockCallBack: Function (Run after Clock stops),
  * }
  */
 const Clock = ({
   isTest,
-  noPump,
+  disablePump,
   reasonToStop,
   clockCallback,
 }) => {
-  if (noPump) console.log('pump deactiviated');
+  if (disablePump) console.log('pump deactiviated');
 
-  let pumpSetting = noPump;
+  let pumpSetting = disablePump;
   let storedIsDisarmed;
   let storedDisarmTime1;
   let storedDisarmTime2;
@@ -123,7 +127,11 @@ const Clock = ({
   let skipToday = false;
   let storedSkipCount; // SET UP
   let storedSoakCount; // SET UP
-
+  let amSucceeding = false;
+  const determineIfSucceeding = (status) => {
+    if (status) amSucceeding = status;
+    return amSucceeding;
+  };
   // Initiate Clock
   const intervalObj = setInterval(() => {
     // Check for any reason to stop Clock
@@ -176,6 +184,20 @@ const Clock = ({
     if (setAlarm2()) setAlarm2(alarm2());
     if (setUsername()) setUsername('daurham');
 
+    // Handle when time is changed into an earlier time -- skipping the alarm
+    if (storedAlarm1 > theCurrentTime() && alarm1() < theCurrentTime()) {
+      storedAlarm1 = alarm1();
+      setDisarmTime1(null);
+      setDisarmTime2(null);
+      setAlarm1(alarm1());
+      setAlarm2(alarm2());
+      setSuccess(0);
+      setUsername('daurham');
+      setTimeout(() => postDisarmRecord(getSocket), 500);
+      incrementDaysSkipped();
+      dataWasRecordedToday = true;
+    }
+
     // Handle when alarm1 changes
     if (storedAlarm1 !== alarm1()) {
       setAlarm1(alarm1());
@@ -192,47 +214,45 @@ const Clock = ({
       // If Disarm Status Changes
       if (storedIsDisarmed !== isDisarmed()) {
         storedIsDisarmed = isDisarmed();
-        // Monitor Disarm 1 Changes For Record Keeping
+        // If Disamred during phase 1
         if (isDisarmed() === true) {
+          // Store disarm time for Record Keeping
           storedDisarmTime1 = theCurrentTime();
           setDisarmTime1(storedDisarmTime1);
+          // Keep track of success
+          bypassAlarm(determineIfSucceeding, 1);
         }
-      }
-      // Handle when time is changed into an earlier time -- skipping the alarm
-      if (storedAlarm1 > theCurrentTime() && alarm1() < theCurrentTime()) {
-        setDisarmTime1(null);
-        setDisarmTime2(null);
-        setAlarm1(alarm1());
-        setAlarm2(alarm2());
-        setSuccess(0);
-        setUsername('daurham');
-        setTimeout(() => postDisarmRecord(getSocket), 500);
-        // Post record data & count this as a skip // SET UP
       }
     }
 
-    if (currentPhase === 2) {
-      if (theCurrentTime() === alarm2() && skipToday && !isDisarmed()) runAlarm(pumpSetting, 2);
+    if (currentPhase === 2 && !skipToday) {
       // Initiate Phase 2
       if (theCurrentTime() === aFewSecIntoAlarm1() && isDisarmed()) toggleDisarmStatus();
       // Handle Alarm2 Failure:
       if (theCurrentTime() === alarm2() && !isDisarmed()) runAlarm(pumpSetting, 2);
-      // Handle Streak++ & Reset
-      if (theCurrentTime() === alarm2() && isDisarmed()) bypassAlarm();
       // If Disarm Status Changes
       if (storedIsDisarmed !== isDisarmed()) {
         storedIsDisarmed = isDisarmed();
-        // Monitor Disarm 2 Changes For Record Keeping
+        // If Disamred during phase 2
         if (isDisarmed() === true) {
+          // Store disarm time for Record Keeping
           storedDisarmTime2 = theCurrentTime();
           setDisarmTime2(storedDisarmTime2);
+          // Handle Streak++ & Reset
+          bypassAlarm(determineIfSucceeding, 2);
         }
       }
     }
 
     if (currentPhase === 3) {
       if (theCurrentTime() === aFewSecIntoAlarm2()) {
-        if (!dataWasRecordedToday) postDisarmRecord(getSocket);
+        // reset disarm status
+        if (isDisarmed()) toggleDisarmStatus();
+        if (!dataWasRecordedToday) {
+          // post data & reset daily logging
+          postDisarmRecord(getSocket);
+          dataWasRecordedToday = true;
+        }
       }
     }
 

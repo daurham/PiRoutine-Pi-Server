@@ -19,7 +19,7 @@ module.exports = {
   UPDATE_STREAK_DATA: 'update-streak-data',
   UPDATED_STREAK_DATA: 'updated-streak-data',
   UPDATE_USER_DATA: 'update-user-data',
-  UPDATED_USER_DATA: 'update-user-data',
+  UPDATED_USER_DATA: 'updated-user-data',
   UPDATE_SOAKED_COUNT: 'update-soaked-data',
   UPDATED_SOAKED_COUNT: 'updated-soaked-count',
   UPDATE_SKIPPED_DATA: 'update-skipped-data',
