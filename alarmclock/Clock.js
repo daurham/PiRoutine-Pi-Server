@@ -58,7 +58,7 @@ const incrementStreak = () => {
 };
 const incrementDaysSkipped = () => {
   console.log('SKIPPING A DAY');
-  socket().emit(EVENTS.UPDATED_SKIPPED_DATA, skippedCount() + 1);
+  socket().emit(EVENTS.UPDATE_SKIPPED_DATA, skippedCount() + 1);
 };
 const incrementDaysSoaked = () => {
   socket().emit(EVENTS.UPDATE_SOAKED_COUNT, soakedCount() + 1);
@@ -97,14 +97,24 @@ const testingTools = {
 };
 
 /**
+ * @description -
+ * - The Clock function is the heart of the applications alarmClock functionality.
+ * - Every second, Clock will check relevant values to determine
+ * it's next action.
  *
- * @param {ClockOptions} param
- * interface clockOptions {
-  * isTest: Boolean,
-  * disablePump: Boolean,
-  * reasonToStop: Function: Boolean,
-  * clockCallBack: Function (Run after Clock stops),
+ * @param {ClockOptions}
+ * - ClockOptions
+ *
+ * ClockOptions {
+ *  - isTest: Boolean,
+ *  - disablePump: Boolean,
+ *  - reasonToStop: Function: Boolean,
+ *  - clockCallBack: Function (Run after Clock stops),
+ *
  * }
+ *
+ * @returns
+ * - void
  */
 const Clock = ({
   isTest,

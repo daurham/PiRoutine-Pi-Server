@@ -3,9 +3,9 @@
  *  We pass in an empty options argument for default run.
  *
  *
- * Clock({ options });
+ * Clock({ ClockOptions });
  *
- * options = {
+ * @params ClockOptions = {
  *   disablePump?: boolean
  *   reasonToStop?: function
  *   clockCallback?: function
@@ -16,4 +16,5 @@
  *                   }
  * }
  */
+
 require('./Clock').Clock({ disablePump: true });
