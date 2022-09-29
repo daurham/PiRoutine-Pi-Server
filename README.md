@@ -2,6 +2,8 @@
   
 # PiRoutine | Server & AlarmClock ⏰💦
 
+![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
+
 
 ###  PiRoutine is a morning alarm system that uses a port forwarded raspberry pi, that's wired via relay switch to a water pump, and interacted with through a deployed front end. 
  ### All of which aims to instill good habits in the user, starting by waking up on time. 
