@@ -47,6 +47,6 @@ One day, I'll make a video. Meanwhile, just ask if you'd like help setting up.
 
 ![](https://media.giphy.com/media/4T9FrMFKvVCOVPt3AD/giphy.gif)
 
--Jake Ernest Daurham
+[Jake Ernest Daurham](https://daurham.com/)
 
 </div>
