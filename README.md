@@ -14,7 +14,7 @@ The raspberry pi is connected to a water pump in the 5 gallon bucket, and some t
 - Connect to your Pi's mysql database
 - Port Forward the Pi so it's accessible externally
 - Install / set up pm2 to run `server` & `alarmclock` on startup
-- Clone, Install & Deploy the PiRoutine Client & [read it's README](https://github.com/daurham/PiRoutine-EC2-Client/edit/main/README.md)
+- Clone, Install & Deploy the PiRoutine Client & [read it's README](https://github.com/daurham/PiRoutine-EC2-Client)
 
 One day, I'll make a video. Meanwhile, just ask if you'd like help setting up.
 
