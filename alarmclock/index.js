@@ -17,4 +17,4 @@
  * }
  */
 
-require('./Clock').Clock({ disablePump: true });
+require('./Clock').Clock({ disablePump: false });
